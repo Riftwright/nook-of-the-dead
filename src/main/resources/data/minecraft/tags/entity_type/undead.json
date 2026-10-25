@@ -1,0 +1,17 @@
+{
+  "replace": false,
+  "values": [
+    "nookofthedead:mutated_zombie",
+    "nookofthedead:mutated_zombie_villager",
+    "nookofthedead:mutated_zombie_horse",
+    "nookofthedead:zombie_cow",
+    "nookofthedead:zombie_wolf",
+    "nookofthedead:infected_cat",
+    "nookofthedead:infected_rat",
+    "nookofthedead:infected_bat",
+    "nookofthedead:vandal",
+    "nookofthedead:mutated_husk",
+    "nookofthedead:infected_camel",
+    "nookofthedead:infected_scorpion"
+  ]
+}

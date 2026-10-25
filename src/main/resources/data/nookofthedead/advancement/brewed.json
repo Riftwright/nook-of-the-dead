@@ -1,0 +1,26 @@
+{
+  "parent": "nookofthedead:vandal",
+  "criteria": {
+    "awarded": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "nookofthedead:cleansed_flesh"
+    },
+    "title": {
+      "translate": "advancements.nookofthedead.brewed.title"
+    },
+    "description": {
+      "translate": "advancements.nookofthedead.brewed.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "awarded"
+    ]
+  ],
+  "sends_telemetry_event": false
+}

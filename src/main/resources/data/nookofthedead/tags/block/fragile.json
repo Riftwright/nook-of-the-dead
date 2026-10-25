@@ -1,0 +1,21 @@
+{
+  "values": [
+    "#minecraft:leaves",
+    "#minecraft:wool",
+    "#minecraft:beds",
+    "minecraft:glass",
+    "minecraft:glass_pane",
+    {
+      "id": "nookworks:if_mirror",
+      "required": false
+    },
+    {
+      "id": "#c:glass_blocks",
+      "required": false
+    },
+    {
+      "id": "#c:glass_panes",
+      "required": false
+    }
+  ]
+}

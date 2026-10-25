@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "full=true": {
+      "model": "nookofthedead:block/vaccine_tank"
+    },
+    "full=false": {
+      "model": "nookofthedead:block/vaccine_tank_empty"
+    }
+  }
+}

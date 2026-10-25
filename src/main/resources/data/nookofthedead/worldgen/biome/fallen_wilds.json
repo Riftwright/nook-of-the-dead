@@ -1,0 +1,84 @@
+{
+  "attributes": {
+    "minecraft:visual/sky_color": "#98aac4",
+    "minecraft:gameplay/natural_mob_spawns": {
+      "argument": {
+        "spawn_costs": {},
+        "spawns_by_category": {
+          "monster": [
+            {
+              "type": "nookofthedead:mutated_zombie",
+              "count": {
+                "type": "minecraft:uniform",
+                "min_inclusive": 1,
+                "max_inclusive": 4
+              },
+              "weight": 90
+            },
+            {
+              "type": "nookofthedead:mutated_zombie_villager",
+              "count": {
+                "type": "minecraft:uniform",
+                "min_inclusive": 1,
+                "max_inclusive": 1
+              },
+              "weight": 10
+            },
+            {
+              "type": "nookofthedead:zombie_wolf",
+              "count": {
+                "type": "minecraft:uniform",
+                "min_inclusive": 2,
+                "max_inclusive": 4
+              },
+              "weight": 25
+            },
+            {
+              "type": "nookofthedead:infected_bat",
+              "count": {
+                "type": "minecraft:uniform",
+                "min_inclusive": 1,
+                "max_inclusive": 3
+              },
+              "weight": 5
+            }
+          ]
+        }
+      },
+      "modifier": "overlay"
+    },
+    "minecraft:visual/fog_color": "#7f8270",
+    "minecraft:visual/fog_start_distance": {
+      "argument": 0.5,
+      "modifier": "multiply"
+    },
+    "minecraft:visual/fog_end_distance": {
+      "argument": 0.75,
+      "modifier": "multiply"
+    },
+    "minecraft:audio/background_music": {},
+    "minecraft:audio/music_volume": 0.0,
+    "minecraft:audio/ambient_sounds": {
+      "mood": {
+        "block_search_extent": 8,
+        "offset": 2.0,
+        "sound": "minecraft:ambient.cave",
+        "tick_delay": 6000
+      },
+      "additions": {
+        "sound": "minecraft:ambient.crimson_forest.additions",
+        "tick_chance": 0.0015
+      }
+    }
+  },
+  "carvers": [],
+  "downfall": 0.7,
+  "effects": {
+    "water_color": "#3f6a7a",
+    "grass_color": "#6c9a4c",
+    "foliage_color": "#5a8a3e"
+  },
+  "features": [],
+  "has_precipitation": true,
+  "temperature": 0.6
+}

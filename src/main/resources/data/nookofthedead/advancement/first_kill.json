@@ -1,0 +1,38 @@
+{
+  "parent": "nookofthedead:root",
+  "criteria": {
+    "killed": {
+      "trigger": "minecraft:player_killed_entity",
+      "conditions": {
+        "entity": {
+          "type": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "minecraft:entity_type": [
+              "nookofthedead:mutated_zombie",
+              "nookofthedead:mutated_zombie_villager",
+              "nookofthedead:mutated_husk"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "minecraft:iron_sword"
+    },
+    "title": {
+      "translate": "advancements.nookofthedead.first_kill.title"
+    },
+    "description": {
+      "translate": "advancements.nookofthedead.first_kill.description"
+    }
+  },
+  "requirements": [
+    [
+      "killed"
+    ]
+  ],
+  "sends_telemetry_event": false
+}

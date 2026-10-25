@@ -1,0 +1,15 @@
+{
+  "values": [
+    "minecraft:bedrock",
+    "minecraft:obsidian",
+    "minecraft:crying_obsidian",
+    "minecraft:reinforced_deepslate",
+    "minecraft:iron_block",
+    "minecraft:netherite_block",
+    "minecraft:barrier",
+    "minecraft:respawn_anchor",
+    "minecraft:end_portal_frame",
+    "minecraft:ancient_debris",
+    "nookofthedead:bulkhead"
+  ]
+}

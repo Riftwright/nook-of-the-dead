@@ -1,0 +1,27 @@
+{
+  "parent": "nookofthedead:first_kill",
+  "criteria": {
+    "awarded": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "minecraft:player_head"
+    },
+    "title": {
+      "translate": "advancements.nookofthedead.familiar_face.title"
+    },
+    "description": {
+      "translate": "advancements.nookofthedead.familiar_face.description"
+    },
+    "frame": "challenge",
+    "hidden": true
+  },
+  "requirements": [
+    [
+      "awarded"
+    ]
+  ],
+  "sends_telemetry_event": false
+}

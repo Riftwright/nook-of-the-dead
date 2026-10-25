@@ -1,0 +1,25 @@
+{
+  "parent": "nookofthedead:root",
+  "criteria": {
+    "awarded": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "minecraft:red_bed"
+    },
+    "title": {
+      "translate": "advancements.nookofthedead.till_morning.title"
+    },
+    "description": {
+      "translate": "advancements.nookofthedead.till_morning.description"
+    }
+  },
+  "requirements": [
+    [
+      "awarded"
+    ]
+  ],
+  "sends_telemetry_event": false
+}

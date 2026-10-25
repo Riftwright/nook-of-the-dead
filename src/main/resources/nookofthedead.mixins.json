@@ -1,0 +1,19 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.nookofthedead.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "ChunkGeneratorAccessor",
+    "IfLevelMixin",
+    "StructureTemplateAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "client": [
+    "client.CameraMixin",
+    "client.DaemonViewMixin",
+    "client.SkyColourMixin"
+  ]
+}

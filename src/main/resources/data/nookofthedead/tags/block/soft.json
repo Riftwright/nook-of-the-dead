@@ -1,0 +1,41 @@
+{
+  "values": [
+    "#minecraft:planks",
+    "#minecraft:logs",
+    "#minecraft:wooden_doors",
+    "#minecraft:wooden_trapdoors",
+    "#minecraft:wooden_fences",
+    "#minecraft:fence_gates",
+    "#minecraft:wooden_slabs",
+    "#minecraft:wooden_stairs",
+    "#minecraft:leaves",
+    "#minecraft:wool",
+    "minecraft:glass",
+    "minecraft:glass_pane",
+    "minecraft:hay_block",
+    "minecraft:bookshelf",
+    "#minecraft:beds",
+    {
+      "id": "nookworks:if_mirror",
+      "required": false
+    },
+    "minecraft:dirt",
+    "minecraft:coarse_dirt",
+    "minecraft:grass_block",
+    "minecraft:podzol",
+    "minecraft:rooted_dirt",
+    "minecraft:gravel",
+    "#minecraft:sand",
+    "minecraft:melon",
+    "minecraft:pumpkin",
+    "minecraft:carved_pumpkin",
+    {
+      "id": "#c:glass_blocks",
+      "required": false
+    },
+    {
+      "id": "#c:glass_panes",
+      "required": false
+    }
+  ]
+}

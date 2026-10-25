@@ -1,0 +1,95 @@
+{
+  "attributes": {
+    "minecraft:visual/sky_color": "#9fadc2",
+    "minecraft:gameplay/natural_mob_spawns": {
+      "argument": {
+        "spawn_costs": {},
+        "spawns_by_category": {
+          "monster": [
+            {
+              "type": "nookofthedead:mutated_zombie",
+              "count": {
+                "type": "minecraft:uniform",
+                "min_inclusive": 6,
+                "max_inclusive": 14
+              },
+              "weight": 88
+            },
+            {
+              "type": "nookofthedead:mutated_zombie_villager",
+              "count": {
+                "type": "minecraft:uniform",
+                "min_inclusive": 1,
+                "max_inclusive": 3
+              },
+              "weight": 12
+            },
+            {
+              "type": "nookofthedead:infected_rat",
+              "count": {
+                "type": "minecraft:uniform",
+                "min_inclusive": 2,
+                "max_inclusive": 4
+              },
+              "weight": 6
+            },
+            {
+              "type": "nookofthedead:infected_bat",
+              "count": {
+                "type": "minecraft:uniform",
+                "min_inclusive": 1,
+                "max_inclusive": 3
+              },
+              "weight": 3
+            }
+          ]
+        }
+      },
+      "modifier": "overlay"
+    },
+    "minecraft:visual/fog_color": "#8a8670",
+    "minecraft:visual/fog_start_distance": {
+      "argument": 0.35,
+      "modifier": "multiply"
+    },
+    "minecraft:visual/fog_end_distance": {
+      "argument": 0.6,
+      "modifier": "multiply"
+    },
+    "minecraft:audio/background_music": {},
+    "minecraft:audio/music_volume": 0.0,
+    "minecraft:audio/ambient_sounds": {
+      "mood": {
+        "block_search_extent": 8,
+        "offset": 2.0,
+        "sound": "minecraft:ambient.cave",
+        "tick_delay": 6000
+      },
+      "additions": {
+        "sound": "minecraft:ambient.basalt_deltas.additions",
+        "tick_chance": 0.0035
+      }
+    },
+    "minecraft:visual/ambient_particles": {
+      "argument": [
+        {
+          "particle": {
+            "type": "minecraft:white_ash"
+          },
+          "probability": 0.0025
+        }
+      ],
+      "modifier": "append"
+    }
+  },
+  "carvers": [],
+  "downfall": 0.4,
+  "effects": {
+    "water_color": "#4d6b78",
+    "grass_color": "#7f9a5e",
+    "foliage_color": "#6f8a4e"
+  },
+  "features": [],
+  "has_precipitation": true,
+  "temperature": 0.7
+}

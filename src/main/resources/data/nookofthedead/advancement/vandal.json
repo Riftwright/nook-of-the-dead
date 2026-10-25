@@ -1,0 +1,35 @@
+{
+  "parent": "nookofthedead:institute_map",
+  "criteria": {
+    "killed": {
+      "trigger": "minecraft:player_killed_entity",
+      "conditions": {
+        "entity": {
+          "type": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "minecraft:entity_type": "nookofthedead:vandal"
+          }
+        }
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "nookofthedead:vandal_blood"
+    },
+    "title": {
+      "translate": "advancements.nookofthedead.vandal.title"
+    },
+    "description": {
+      "translate": "advancements.nookofthedead.vandal.description"
+    },
+    "frame": "challenge"
+  },
+  "requirements": [
+    [
+      "killed"
+    ]
+  ],
+  "sends_telemetry_event": false
+}

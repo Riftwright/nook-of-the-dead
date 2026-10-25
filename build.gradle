@@ -1,0 +1,132 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.148'
+}
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = mod_id
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+
+// Nookworks, which this is an add-on to: compiled against, and run beside it in every dev run. From a Nookworks
+// checkout's last build where there is one (libs/nookworks-dev.jar, tools/nookworks_dev_jar.py: it keeps Nookworks'
+// agent input bridge, left out of the published jar, so the agent client here can be driven as Nookworks' own is);
+// else the published Nookworks from CurseForge (Curse Maven, nookworks_curse_file), as a clone of the public source has.
+def devJar = file('libs/nookworks-dev.jar')
+def nookworksJar = devJar.exists() ? files(devJar) : "curse.maven:nookworks-1712007:${nookworks_curse_file}"
+
+// The mods the user plays Nookworks 26.3 with, beside it in the dev runs as Nookworks' own build has them (its
+// gradle.properties' versions): JEI and Jade. Only run here, never a dependency of the published jar.
+repositories {
+    maven {
+        name = "JEI"
+        url = "https://maven.blamejared.com/"
+        content { includeGroup "mezz.jei"; includeGroup "net.mezzdev.config" }
+    }
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+        content { includeGroup "maven.modrinth" }
+    }
+    maven {
+        name = "Curse Maven"
+        url = "https://cursemaven.com"
+        content { includeGroup "curse.maven" }
+    }
+}
+
+neoForge {
+    version = project.neo_version
+
+    runs {
+        // The prototype for the user to try, in its own folder (never Nookworks' run/, which holds the user's worlds)
+        client {
+            client()
+            gameDirectory = project.file('run')
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+        // For the agent's checks: its own folder, a world opened at once, driven by tools/mcwin.ps1
+        agentClient {
+            client()
+            gameDirectory = project.file('run-agent')
+            programArguments.addAll '--quickPlaySingleplayer', project.findProperty('agentWorld') ?: 'Fallen Test'
+            systemProperty 'nookworks.agentInput', 'true'
+            systemProperty 'nookofthedead.fpsLog', 'true'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            jvmArguments.addAll '-Xmx4G'
+            // Iris in run-agent/mods (a shader check): the dev launch's render validation stops it, so it is turned off
+            if (project.file('run-agent/mods').listFiles()?.any { it.name.startsWith('iris') }) {
+                systemProperty 'neoforge.disableBlaze3DValidation', 'true'
+            }
+            if (project.hasProperty('agentWindow')) {
+                def size = project.property('agentWindow').toString().split('x')
+                programArguments.addAll '--width', size[0], '--height', size[1]
+            }
+        }
+        gameTestServer {
+            type = "gameTestServer"
+            gameDirectory = project.file('run-gametest')
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+        configureEach {
+            systemProperty 'neoforge.warnings.logofile.hide', 'true'
+            logLevel = org.slf4j.event.Level.INFO
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+        }
+    }
+}
+
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+}
+
+dependencies {
+    compileOnly nookworksJar
+    localRuntime nookworksJar
+    localRuntime "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
+    localRuntime "maven.modrinth:jade:${jade_version}"
+}
+
+var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
+    var replaceProperties = [
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+            mod_authors            : mod_authors,
+            nookworks_version_floor: nookworks_version_floor,
+            nookworks_version_ceiling: nookworks_version_ceiling,
+    ]
+    inputs.properties replaceProperties
+    expand replaceProperties
+    from "src/main/templates"
+    into "build/generated/sources/modMetadata"
+}
+sourceSets.main.resources.srcDir generateModMetadata
+neoForge.ideSyncTask generateModMetadata
+
+tasks.named('jar') {
+    exclude 'dev/nookofthedead/gametest/**'
+    exclude 'dev/nookofthedead/client/dev/**' // the guide's icon sheets (IconSheet), the trailer's camera (CameraPath): development only
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+// the licence goes inside the jar too
+tasks.named('jar') {
+    from("LICENSE") { rename { "LICENSE_nookofthedead" } }
+}

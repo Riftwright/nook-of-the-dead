@@ -1,0 +1,30 @@
+{
+  "parent": "nookofthedead:first_dose",
+  "criteria": {
+    "awarded": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "minecraft:splash_potion",
+      "components": {
+        "minecraft:potion_contents": {
+          "potion": "nookofthedead:suppressant"
+        }
+      }
+    },
+    "title": {
+      "translate": "advancements.nookofthedead.put_down.title"
+    },
+    "description": {
+      "translate": "advancements.nookofthedead.put_down.description"
+    }
+  },
+  "requirements": [
+    [
+      "awarded"
+    ]
+  ],
+  "sends_telemetry_event": false
+}

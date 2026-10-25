@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "nookofthedead:map_scrap",
+    "nookofthedead:map_scrap",
+    "nookofthedead:map_scrap",
+    "nookofthedead:map_scrap"
+  ],
+  "result": {
+    "count": 1,
+    "id": "nookofthedead:scrawled_map"
+  }
+}

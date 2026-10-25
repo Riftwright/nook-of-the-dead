@@ -1,0 +1,2 @@
+# what the Python tools import; Pillow held to one version, so the PNGs the scripts write come out byte for byte the same
+Pillow==12.2.0

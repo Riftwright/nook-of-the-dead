@@ -1,0 +1,26 @@
+{
+  "parent": "nookofthedead:put_down",
+  "criteria": {
+    "cured": {
+      "trigger": "minecraft:cured_zombie_villager"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "minecraft:golden_apple"
+    },
+    "title": {
+      "translate": "advancements.nookofthedead.cured.title"
+    },
+    "description": {
+      "translate": "advancements.nookofthedead.cured.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "cured"
+    ]
+  ],
+  "sends_telemetry_event": false
+}

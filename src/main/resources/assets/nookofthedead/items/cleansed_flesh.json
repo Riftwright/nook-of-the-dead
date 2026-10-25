@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "minecraft:item/rotten_flesh",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": -2056008
+      }
+    ]
+  }
+}

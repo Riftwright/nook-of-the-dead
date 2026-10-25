@@ -1,0 +1,20 @@
+# Secret scan config used by tools/publish_public.py (which has patterns of its own and the denylist).
+# Personal strings (real name, local user name, private email) are NOT listed here,
+# because this file is public. They live in .git/info/denylist, which is never committed.
+[extend]
+useDefault = true
+
+[[rules]]
+id = "windows-user-path"
+description = "Absolute Windows user path (leaks the local account name)"
+regex = '''(?i)[a-z]:[\\/]+users[\\/]+[a-z0-9._-]{2,}'''
+
+[[rules]]
+id = "posix-user-path"
+description = "Absolute Git-Bash user path"
+regex = '''(?i)/c/users/[a-z0-9._-]{2,}'''
+
+[[rules]]
+id = "webmail-address"
+description = "Personal webmail address"
+regex = '''(?i)[a-z0-9._%+-]+@(gmail|googlemail|outlook|hotmail|yahoo|icloud)\.[a-z.]+'''

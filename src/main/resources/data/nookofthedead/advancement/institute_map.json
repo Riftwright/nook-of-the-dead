@@ -1,0 +1,32 @@
+{
+  "parent": "nookofthedead:first_dose",
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "nookofthedead:scrawled_map"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "nookofthedead:scrawled_map"
+    },
+    "title": {
+      "translate": "advancements.nookofthedead.institute_map.title"
+    },
+    "description": {
+      "translate": "advancements.nookofthedead.institute_map.description"
+    }
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ],
+  "sends_telemetry_event": false
+}

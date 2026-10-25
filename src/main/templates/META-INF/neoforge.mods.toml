@@ -1,0 +1,37 @@
+modLoader="javafml"
+loaderVersion="[1,)"
+license="${mod_license}"
+
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+authors="${mod_authors}"
+credits="Made with AI under the author's direction (the code by Claude, Anthropic); the buildings by the author and drafted by AI to the author's brief."
+logoFile="nookofthedead_logo.png"
+displayURL="https://www.curseforge.com/minecraft/mc-mods/nook-of-the-dead"
+description='''
+An add-on to Nookworks: the If becomes a world whose civilisation of players fell to the dead long ago - towns, farmland, wilds and settlements in ruins, mutated zombies that run, see only what is in sight and hear the rest, and an infection that only suppressants found in the ruins hold back. Somewhere a research institute stands; at the bottom of it, the Vandal.
+'''
+
+[[mixins]]
+config="nookofthedead.mixins.json"
+
+[[dependencies.${mod_id}]]
+    modId="neoforge"
+    type="required"
+    versionRange="[${neo_version},26.4)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.${mod_id}]]
+    modId="minecraft"
+    type="required"
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.${mod_id}]]
+    modId="nookworks"
+    type="required"
+    versionRange="[${nookworks_version_floor},${nookworks_version_ceiling})"
+    ordering="AFTER"
+    side="BOTH"

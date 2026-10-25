@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "nookofthedead:item/infected_scorpion_spawn_egg"
+  }
+}

@@ -33,7 +33,9 @@ public final class Refuge {
     public static final BoundingBox LOCAL = new BoundingBox(8, RefugeRooms.FLOOR, 37, 56, 8, 62);
 
     /** Each institute's refuge in the world, by its block (none where the block has no institute). */
-    private static final Map<Long, BoundingBox> PLACED = new ConcurrentHashMap<>();
+    /** A placed refuge, by its world and block, each whole (not packed into one long, which two worlds could share). */
+    private record Key(long seed, int bx, int bz) {}
+    private static final Map<Key, BoundingBox> PLACED = new ConcurrentHashMap<>();
     private static final BoundingBox NONE = new BoundingBox(0, 0, 0, 0, 0, 0);
 
     /** Whether {@code pos} is in an institute's refuge. */
@@ -58,7 +60,7 @@ public final class Refuge {
         if (!Institute.at(seed, bx, bz)) {
             return null;
         }
-        BoundingBox box = PLACED.computeIfAbsent(seed * 31 + ((long) bx << 32 ^ (bz & 0xffffffffL)), k -> {
+        BoundingBox box = PLACED.computeIfAbsent(new Key(seed, bx, bz), k -> {
             Town.Lot lot = Town.lots(seed, bx, bz).stream().filter(l -> l.building().map(Town.INSTITUTE::equals).orElse(false))
                     .findFirst().orElse(null);
             StructureTemplate deep = level.getServer().getStructureTemplateManager().get(Town.INSTITUTE_DEEP).orElse(null);

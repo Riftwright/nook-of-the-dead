@@ -112,7 +112,7 @@ public final class Rooftops {
         }
         BlockPos keeper = camp.at(2, 1);
         if (Math.floorMod(h >> 17, 100L) < KEPT && box.isInside(keeper) && level.getBlockState(keeper).isAir()) {
-            Markers.remains(level, keeper, settings.getRotation().rotate(Direction.NORTH), RandomSource.create(h ^ 0x700F));
+            Markers.remains(level, keeper, settings.getRotation().rotate(settings.getMirror().mirror(Direction.NORTH)), RandomSource.create(h ^ 0x700F));
         }
     }
 

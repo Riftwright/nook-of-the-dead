@@ -98,6 +98,15 @@ public final class Cure extends SavedData {
         }
     }
 
+    /** Forgets any cure, as if the vaccine had never been let go: for the tests, which leave the If as they found it. */
+    public static void forget(MinecraftServer server) {
+        Cure cure = get(server);
+        cure.curedIf = "";
+        cure.stopped = false;
+        cure.setDirty();
+        tell(server, false);
+    }
+
     private static void tell(MinecraftServer server, boolean cured) {
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             FilmPayloads.send(player, new FilmPayloads.Cured(cured));
@@ -139,8 +148,15 @@ public final class Cure extends SavedData {
         }
     }
 
-    /** Whether {@code entity} is one of the plague's: a monster of this mod's (the dead, the animals it took, what grew of it). */
+    /**
+     * Whether {@code entity} is one of the plague's: a monster of this mod's (the dead, the animals it took, what grew of it),
+     * and the capital's crows, which are ambient so as not to take the dead's share of the spawns (the review, 2026-10-25:
+     * they outlived the cure, and their flocks came back to a cured If).
+     */
     public static boolean plague(net.minecraft.world.entity.Entity entity) {
+        if (entity instanceof dev.nookofthedead.entity.CapitalCrow) {
+            return true;
+        }
         // the dead and everything the plague took - its cows, wolves, horses, camels too (the review, 2026-10-19) - but not the
         // sky base's guards, which are iron, nor the remains
         return entity.getType().getCategory() == net.minecraft.world.entity.MobCategory.MONSTER

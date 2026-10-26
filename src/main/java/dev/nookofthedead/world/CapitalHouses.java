@@ -113,7 +113,7 @@ final class CapitalHouses {
     /** What one chunk's drawing looks up more than once: the houses' ladders and ridges, and the plan past its window. */
     static final class Memo {
         final Map<Long, int[]> ladders = new HashMap<>();
-        final Map<Long, Direction.Axis> ridges = new HashMap<>();
+        final Map<Long, java.util.Optional<Direction.Axis>> ridges = new HashMap<>();   // empty for a hipped roof, kept too
         final Map<Long, Capital.Column> columns = new HashMap<>();
     }
 
@@ -148,23 +148,27 @@ final class CapitalHouses {
      * narrow house deep from the lane shows its gable to it (PLAN.md's old town: houses with their gables to the street).
      */
     static Direction.Axis ridge(Capital.Site s, Capital.Column[][] w, int a, int b, int x, int z, House house, Capital.Column c, Memo memo) {
-        return memo.ridges.computeIfAbsent(house.key() ^ 0x5DEECE66DL, k -> {
-            if (Math.floorMod(house.hash() >> 23, 100L) >= GABLED) {
-                return null;
-            }
-            int[] p = Capital.parcelSeed(s, c.parcel());
-            int pa = a + p[0] - x;
-            int pb = b + p[1] - z;
-            if (!roofed(column(s, w, pa, pb, p[0], p[1], memo), house)) {
-                return null;                                                 // a parcel whose seed fell outside its house: hipped
-            }
-            int alongX = run(s, w, pa, pb, p[0], p[1], house, Direction.EAST, memo) + run(s, w, pa, pb, p[0], p[1], house, Direction.WEST, memo);
-            int alongZ = run(s, w, pa, pb, p[0], p[1], house, Direction.SOUTH, memo) + run(s, w, pa, pb, p[0], p[1], house, Direction.NORTH, memo);
-            if (alongX == alongZ) {
-                return (house.hash() >> 29 & 1L) == 0 ? Direction.Axis.X : Direction.Axis.Z;
-            }
-            return alongX > alongZ ? Direction.Axis.X : Direction.Axis.Z;
-        });
+        return memo.ridges.computeIfAbsent(house.key() ^ 0x5DEECE66DL, k -> java.util.Optional.ofNullable(ridge(s, w, a, b, x, z, house, c,
+                memo, Math.floorMod(house.hash() >> 23, 100L) < GABLED))).orElse(null);
+    }
+
+    private static Direction.Axis ridge(Capital.Site s, Capital.Column[][] w, int a, int b, int x, int z, House house, Capital.Column c,
+            Memo memo, boolean gabled) {
+        if (!gabled) {
+            return null;
+        }
+        int[] p = Capital.parcelSeed(s, c.parcel());
+        int pa = a + p[0] - x;
+        int pb = b + p[1] - z;
+        if (!roofed(column(s, w, pa, pb, p[0], p[1], memo), house)) {
+            return null;                                                     // a parcel whose seed fell outside its house: hipped
+        }
+        int alongX = run(s, w, pa, pb, p[0], p[1], house, Direction.EAST, memo) + run(s, w, pa, pb, p[0], p[1], house, Direction.WEST, memo);
+        int alongZ = run(s, w, pa, pb, p[0], p[1], house, Direction.SOUTH, memo) + run(s, w, pa, pb, p[0], p[1], house, Direction.NORTH, memo);
+        if (alongX == alongZ) {
+            return (house.hash() >> 29 & 1L) == 0 ? Direction.Axis.X : Direction.Axis.Z;
+        }
+        return alongX > alongZ ? Direction.Axis.X : Direction.Axis.Z;
     }
 
     /** How many steps from ({@code x}, {@code z}) toward {@code d} stay under the house's roof (up to {@link #REACH}). */

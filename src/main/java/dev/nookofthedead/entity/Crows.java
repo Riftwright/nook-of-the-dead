@@ -29,8 +29,9 @@ public final class Crows {
 
     @SubscribeEvent
     static void onTick(LevelTickEvent.Post event) {
-        if (!(event.getLevel() instanceof ServerLevel level) || !NookOfTheDead.fallen(level) || level.getGameTime() % EVERY != 7) {
-            return;
+        if (!(event.getLevel() instanceof ServerLevel level) || !NookOfTheDead.fallen(level) || level.getGameTime() % EVERY != 7
+                || dev.nookofthedead.ending.Cure.cured(level.getServer())) {
+            return;                                                     // none over a cured If (the review, 2026-10-25)
         }
         long seed = level.getSeed();
         int[] middle = dev.nookofthedead.world.Capital.centre(seed);

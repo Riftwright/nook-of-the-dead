@@ -32,7 +32,7 @@ final class PlagueTests {
             for (var type : java.util.List.of(ZwEntities.MUTATED_ZOMBIE.get(), ZwEntities.MUTATED_ZOMBIE_VILLAGER.get(),
                     ZwEntities.MUTATED_ZOMBIE_HORSE.get(), ZwEntities.ZOMBIE_COW.get(), ZwEntities.ZOMBIE_WOLF.get(), ZwEntities.INFECTED_CAT.get(), ZwEntities.INFECTED_RAT.get(),
                     ZwEntities.INFECTED_BAT.get(), ZwEntities.VANDAL.get(), ZwEntities.MUTATED_HUSK.get(), ZwEntities.INFECTED_CAMEL.get(),
-                    ZwEntities.INFECTED_SCORPION.get())) {
+                    ZwEntities.INFECTED_SCORPION.get(), ZwEntities.THIN_AIR_ZOMBIE.get())) {
                 check(helper, type.builtInRegistryHolder().is(net.minecraft.tags.EntityTypeTags.SENSITIVE_TO_SMITE)
                         && type.builtInRegistryHolder().is(net.minecraft.tags.EntityTypeTags.UNDEAD),
                         type.toShortString() + " is undead, Smite cuts it");

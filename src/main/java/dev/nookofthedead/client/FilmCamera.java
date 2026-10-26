@@ -736,7 +736,10 @@ public final class FilmCamera {
      */
     @SubscribeEvent
     static void onKey(net.neoforged.neoforge.client.event.InputEvent.Key event) {
-        if (playing() && event.getKey() == 256 && event.getAction() == 1 /* Esc, pressed */
+        // the game's own key codes: since 26.3 they are SDL's, Esc 41 - it was GLFW's 256 here, and Esc skipped nothing (the
+        // review, 2026-10-25)
+        if (playing() && event.getKey() == com.mojang.blaze3d.platform.InputConstants.KEY_ESCAPE
+                && event.getAction() == com.mojang.blaze3d.platform.InputConstants.PRESS
                 && Minecraft.getInstance().gui.screen() == null) {
             leave();
             ClientPacketDistributor.sendToServer(new FilmPayloads.Skip());

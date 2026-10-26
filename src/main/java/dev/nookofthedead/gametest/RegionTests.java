@@ -263,8 +263,12 @@ final class RegionTests {
             BlockPos mid = new BlockPos(stretch[0] * g + g / 2, dev.nookofthedead.world.Tunnels.FLOOR + 1, stretch[1] * g);
             ifLevel.getChunk(mid);
             var midState = ifLevel.getBlockState(mid);
+            // dug: open, or what a barricade or a trap leaves there - its scrap bales and corrugated sheets are Nookworks' (the
+            // review, 2026-10-25: If 241256 failed on a corrugated sheet across the gallery)
             check(helper, midState.isAir() || midState.is(Blocks.TRIPWIRE) || midState.is(Blocks.OAK_FENCE) || midState.is(Blocks.OAK_PLANKS)
-                    || midState.is(Blocks.COBBLESTONE) || midState.is(Blocks.SPRUCE_PLANKS) || midState.is(Blocks.BARREL) || midState.is(Blocks.CARPET.brown()),
+                    || midState.is(Blocks.COBBLESTONE) || midState.is(Blocks.SPRUCE_PLANKS) || midState.is(Blocks.BARREL) || midState.is(Blocks.CARPET.brown())
+                    || midState.getBlock() instanceof dev.nookworks.recycling.CorrugatedSheetBlock
+                    || dev.nookworks.registry.ModRecycling.SCRAP_BALES.values().stream().anyMatch(bale -> midState.is(bale.get())),
                     "the gallery is dug: " + midState);
             check(helper, ifLevel.getBiome(mid).is(dev.nookofthedead.world.RegionBiomes.DEPTHS), "down there the depths' biome");
             BlockPos ladder = new BlockPos(shaft[0] * g, dev.nookofthedead.world.Tunnels.FLOOR + 5, shaft[1] * g);

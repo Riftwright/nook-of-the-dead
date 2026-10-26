@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.0.0 - 2026-10
+
+Requires Nookworks 1.1.0 or later (any 1.x), NeoForge 26.3. **Back up your world before updating.** The castle's roofs and
+the covered market's turn are put right only where the If has not been made yet: in an If you have been in, roll a new one
+to have them right.
+
+- **1.0: out of beta.** The road from the mirror to its end, the town, the country round it and the fallen capital, as
+  they are, gone over again by three reviews and a round of play.
+- **The vaccine takes the capital's crows too**: a cured If burns them with the rest of the dead and keeps no flocks.
+- **The thin-air zombies are undead** like the rest of the plague's creatures: Smite cuts them, a potion of healing hurts them.
+- **The crows cannot be bottled** and let go outside the capital.
+- **The covered market faces its street** on every lot: on about half of them it turned its back to it.
+- **Books on a shelf face out** in a building that was mirrored and turned, where they faced the wall.
+- **Esc skips the films** again (the opening, the ending).
+- A shelter worked out for one If is never taken for another's, in a game that has rolled more than one.
+- **The castle's towers wear their roofs**: the slate cones of the curtain's towers and the keep's corner turrets sat a
+  block over their walls, floating; they sit on them now (where the capital is made after the update).
+
 ## 0.6.0 (beta) - 2026-10
 
 Requires Nookworks 1.1.0 or later (any 1.x), NeoForge 26.3. **Back up your world before updating.** The seas, the

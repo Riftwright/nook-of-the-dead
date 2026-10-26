@@ -53,6 +53,7 @@ public final class ZwGameTests {
         HardnessTests.registerVandal();
         CatTests.register();
         CapitalTests.register();
+        RegressionTests.register();
         EndingTests.registerLoopholes();
         ShelterTests.registerTraces();
     }
@@ -63,6 +64,7 @@ public final class ZwGameTests {
         }
         FUNCTIONS.register(modEventBus);
         modEventBus.addListener(ZwGameTests::onRegisterTests);
+        Bench.register();
     }
 
     static void test(String name, Consumer<GameTestHelper> body) {

@@ -404,22 +404,23 @@ public final class Capital {
         return Math.floorMod(Town.hash(s.seed, keyI(key), keyJ(key), 321 + g.flag()), 100L) < (g.flag() == 1 ? 4 : 3);
     }
 
-    private static volatile long placedSeed = Long.MIN_VALUE;
-    private static volatile long[] placed;
+    /** {@link #placedSquares} for one seed, kept with it: two Ifs drawn at once never take each other's. */
+    private record Placed(long seed, long[] blocks) {}
+
+    private static volatile Placed placed;
 
     /** The blocks of the squares placed on purpose ({@link #squares}), worked out once for the seed. */
     static long[] placedSquares(Site s) {
-        long[] p = placed;
-        if (p != null && placedSeed == s.seed) {
-            return p;
+        Placed known = placed;
+        if (known != null && known.seed() == s.seed) {
+            return known.blocks();
         }
         double[][] at = squares(s);
-        p = new long[at.length];
+        long[] p = new long[at.length];
         for (int k = 0; k < at.length; k++) {
             p[k] = nearestBlock(s, at[k][0], at[k][1]);
         }
-        placed = p;
-        placedSeed = s.seed;
+        placed = new Placed(s.seed, p);
         return p;
     }
 

@@ -43,13 +43,15 @@ final class CapitalLandmarks {
         }
     }
 
-    private static volatile long knownSeed = Long.MIN_VALUE;
-    private static volatile Frame cathedral;
-    private static volatile Frame hall;
+    /** The two worked out for one seed, kept together: two Ifs drawn at once never take each other's. */
+    private record Known(long seed, Frame cathedral, Frame hall) {}
 
-    private static void work(Capital.Site s) {
-        if (knownSeed == s.seed()) {
-            return;
+    private static volatile Known known;
+
+    private static Known work(Capital.Site s) {
+        Known k = known;
+        if (k != null && k.seed() == s.seed()) {
+            return k;
         }
         double ca = s.river() - Math.PI / 2 - 0.9;
         int cx = (int) Math.round(s.x() + Math.cos(ca) * 168);
@@ -67,19 +69,17 @@ final class CapitalLandmarks {
         int hx = (int) Math.round(m[0]) - hallOut.getStepX() * 15;
         int hz = (int) Math.round(m[1]) - hallOut.getStepZ() * 15;
         Frame h = new Frame(hx, hz, hallOut, (int) Math.round(Capital.city(s, hx + hallOut.getStepX() * 3, hz + hallOut.getStepZ() * 3)));
-        cathedral = c;
-        hall = h;
-        knownSeed = s.seed();
+        k = new Known(s.seed(), c, h);
+        known = k;
+        return k;
     }
 
     static Frame cathedral(Capital.Site s) {
-        work(s);
-        return cathedral;
+        return work(s).cathedral();
     }
 
     static Frame hall(Capital.Site s) {
-        work(s);
-        return hall;
+        return work(s).hall();
     }
 
     /** The market square's middle. */

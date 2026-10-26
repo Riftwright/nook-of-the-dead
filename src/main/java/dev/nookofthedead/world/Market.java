@@ -14,6 +14,7 @@ import net.minecraft.world.level.block.BarrelBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LecternBlock;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -69,12 +70,17 @@ public final class Market {
     private final Town.Lot lot;
     private final BoundingBox box;
     private final int y0;
+    /** How the hall is turned: its front (north, as drawn) to the lot's front. Drawn unmirrored, so not the lot's rotation,
+     * which is for a mirrored building on half the lots. */
+    private final Rotation turn;
 
     private Market(WorldGenLevel level, Town.Lot lot, BoundingBox box) {
         this.level = level;
         this.lot = lot;
         this.box = box;
         this.y0 = lot.corner().getY() - 1;                                  // the floor: the ground's own level, as a template's
+        this.turn = Arrays.stream(Rotation.values()).filter(r -> r.rotate(Direction.NORTH) == lot.front()).findFirst()
+                .orElse(lot.rotation());
     }
 
     /** The market on {@code lot}, inside {@code box}. */
@@ -93,7 +99,7 @@ public final class Market {
     BlockPos at(int x, int up, int z) {
         BlockPos c = this.lot.corner();
         int n = SIZE - 1;
-        int[] xz = switch (this.lot.rotation()) {
+        int[] xz = switch (this.turn) {
             case NONE -> new int[] {x, z};
             case CLOCKWISE_90 -> new int[] {n - z, x};
             case CLOCKWISE_180 -> new int[] {n - x, n - z};
@@ -105,7 +111,7 @@ public final class Market {
     void set(int x, int up, int z, BlockState state) {
         BlockPos at = this.at(x, up, z);
         if (this.box.isInside(at)) {
-            this.level.setBlock(at, state.rotate(this.lot.rotation()), 2);
+            this.level.setBlock(at, state.rotate(this.turn), 2);
         }
     }
 
@@ -273,7 +279,7 @@ public final class Market {
                 BlockPos lectern = this.at(back + in, 1, z1);
                 if (this.box.isInside(lectern)) {
                     this.level.setBlock(lectern, Blocks.LECTERN.defaultBlockState().setValue(LecternBlock.FACING,
-                            this.lot.rotation().rotate(in > 0 ? Direction.WEST : Direction.EAST)).setValue(LecternBlock.HAS_BOOK, true), 2);
+                            this.turn.rotate(in > 0 ? Direction.WEST : Direction.EAST)).setValue(LecternBlock.HAS_BOOK, true), 2);
                     if (this.level.getBlockEntity(lectern) instanceof net.minecraft.world.level.block.entity.LecternBlockEntity stand) {
                         stand.setBook(Diaries.book(RandomSource.create(h ^ 0xB00CL)));
                     }
@@ -314,7 +320,7 @@ public final class Market {
         }
         BlockPos body = this.at(AISLE0 + 1, 1, 13 + (int) Math.floorMod(h, 6L));
         if (this.box.isInside(body) && this.level.getBlockState(body).isAir()) {
-            Markers.remains(this.level, body, this.lot.rotation().rotate(Direction.EAST), RandomSource.create(h));
+            Markers.remains(this.level, body, this.turn.rotate(Direction.EAST), RandomSource.create(h));
         }
         this.set(AISLE1 - 1, 1, 20, Blocks.SPRUCE_TRAPDOOR.defaultBlockState().setValue(BlockStateProperties.OPEN, true)
                 .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.WEST));

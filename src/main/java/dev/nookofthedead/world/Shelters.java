@@ -50,12 +50,26 @@ public final class Shelters {
     /** A shelter: its well's middle (its floor's level as y), and its rooms by the way they lie from the hall. */
     public record Shelter(BlockPos well, int top, Map<Direction, Room> rooms, long seed) {}
 
-    private static final Map<Long, Optional<Shelter>> CACHE = new ConcurrentHashMap<>();
+    /**
+     * What is kept, by every input whole: the seed, the buildings' generation and the block (the review, 2026-10-25: one
+     * long made of them all let another If's "none here" stand for a shelter of this one).
+     */
+    private record Key(long seed, long generation, int bx, int bz) {}
+    private static final Map<Key, Optional<Shelter>> CACHE = new ConcurrentHashMap<>();
+    /** How many blocks' answers are kept at most: past it, forgotten and worked out again (a long journey's worth). */
+    private static final int KEPT = 20_000;
+
+    /** Forgets every shelter worked out so far (for the tests: each asks from nothing). */
+    public static void forget() {
+        CACHE.clear();
+    }
 
     /** The shelter under block ({@code bx}, {@code bz}), if it has one. */
     public static Optional<Shelter> at(long seed, int bx, int bz) {
-        long key = seed * 31 + District.generation() * 0x9E3779B97F4A7C15L + ((long) bx << 32 ^ (bz & 0xffffffffL));
-        return CACHE.computeIfAbsent(key, k -> find(seed, bx, bz));
+        if (CACHE.size() > KEPT) {
+            CACHE.clear();
+        }
+        return CACHE.computeIfAbsent(new Key(seed, District.generation(), bx, bz), k -> find(seed, bx, bz));
     }
 
     private static Optional<Shelter> find(long seed, int bx, int bz) {

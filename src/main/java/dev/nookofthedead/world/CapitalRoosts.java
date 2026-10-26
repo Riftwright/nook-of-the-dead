@@ -12,12 +12,15 @@ import net.minecraft.core.Direction;
  * a little above each top.
  */
 public final class CapitalRoosts {
-    private static volatile long knownSeed = Long.MIN_VALUE;
-    private static volatile List<BlockPos> known = List.of();
+    /** The roosts of one seed, kept with it: two Ifs at once never take each other's. */
+    private record Known(long seed, List<BlockPos> roosts) {}
+
+    private static volatile Known known;
 
     public static List<BlockPos> of(long seed) {
-        if (knownSeed == seed) {
-            return known;
+        Known was = known;
+        if (was != null && was.seed() == seed) {
+            return was.roosts();
         }
         Capital.Site s = Capital.site(seed);
         List<BlockPos> roosts = new ArrayList<>();
@@ -46,9 +49,9 @@ public final class CapitalRoosts {
         CapitalLandmarks.Frame h = CapitalLandmarks.hall(s);
         Direction hin = h.front().getOpposite();
         roosts.add(new BlockPos(h.x() + hin.getStepX() * 3, h.level() + 44, h.z() + hin.getStepZ() * 3));
-        known = List.copyOf(roosts);
-        knownSeed = seed;
-        return known;
+        List<BlockPos> all = List.copyOf(roosts);
+        known = new Known(seed, all);
+        return all;
     }
 
     private CapitalRoosts() {}

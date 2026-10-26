@@ -217,7 +217,9 @@ final class Furnish {
         if (!box.isInside(at) || !level.getBlockState(at).isAir()) {
             return;
         }
-        Direction facing = settings.getMirror().mirror(settings.getRotation().rotate(out));
+        // mirrored, then turned, as put() turns the shelf itself (the review, 2026-10-25: the other way round, a mirrored
+        // building turned a quarter had the books on its shelves facing the wall)
+        Direction facing = settings.getRotation().rotate(settings.getMirror().mirror(out));
         long k = (h >> 1) % 5;
         if (k <= 1) {
             Props.row(level, box, at, facing, (h & 1) == 0 ? DoorHingeSide.LEFT : DoorHingeSide.RIGHT, 2 + (int) (h % 4),

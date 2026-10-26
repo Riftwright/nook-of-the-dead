@@ -299,7 +299,9 @@ final class CapitalCastle {
         int outer = (int) Math.floor(Math.max(0, radius - d - 1) * 1.9);
         BlockState slate = Blocks.DEEPSLATE_TILES.defaultBlockState();
         for (int y = height + 1; y <= height + 1 + cone; y++) {
-            set(level, box, at.set(x, y, z), y > height + 1 + outer ? slate : Blocks.AIR.defaultBlockState());
+            // its slate from the wall's top up at the rim, so the cone sits on the tower (the user, 2026-10-26: the roofs
+            // floated a block over their towers); hollow under it inside
+            set(level, box, at.set(x, y, z), y > height + outer ? slate : Blocks.AIR.defaultBlockState());
         }
         if (d < 0.8) {
             for (int y = height + 2 + cone; y <= height + 4 + cone; y++) {
@@ -427,7 +429,7 @@ final class CapitalCastle {
         int cone = (int) Math.floor((3.4 - d) * 2.4);
         int outer = (int) Math.floor(Math.max(0, 2.4 - d) * 2.4);
         for (int y = height + 1; y <= height + 1 + cone; y++) {
-            set(level, box, at.set(x, y, z), y > height + 1 + outer ? Blocks.DEEPSLATE_TILES.defaultBlockState() : Blocks.AIR.defaultBlockState());
+            set(level, box, at.set(x, y, z), y > height + outer ? Blocks.DEEPSLATE_TILES.defaultBlockState() : Blocks.AIR.defaultBlockState());
         }
     }
 

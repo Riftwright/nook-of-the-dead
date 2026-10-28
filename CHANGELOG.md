@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.1 - 2026-10
+
+Requires Nookworks 1.1.0 or later (any 1.x), NeoForge 26.3.
+
+- **The Scrawled Map no longer vanishes** when it is unfolded in survival: the Marked Map it turns into now stays in
+  your hand (in 1.0.0 both were lost).
+
 ## 1.0.0 - 2026-10
 
 Requires Nookworks 1.1.0 or later (any 1.x), NeoForge 26.3. **Back up your world before updating.** The castle's roofs and

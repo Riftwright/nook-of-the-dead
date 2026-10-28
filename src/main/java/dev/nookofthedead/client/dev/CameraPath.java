@@ -38,7 +38,9 @@ import net.neoforged.neoforge.client.event.ExtractBlockOutlineRenderStateEvent;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 import net.neoforged.neoforge.client.event.RenderFrameEvent;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import net.neoforged.neoforge.client.event.ViewportEvent;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
 /**
  * Development only (this package stays out of the jar): a camera that flies along a path, for the trailer (the user,
@@ -53,6 +55,8 @@ import net.neoforged.neoforge.client.event.ViewportEvent;
  * slow 4                    (while filming the game runs this many times slower, so every frame gets drawn)
  * mode spectator            (or creative, survival: the player's game mode for it; spectator if not said)
  * hand                      (the hand and what it holds in view: the HUD hidden without hiding it)
+ * hud                       (the hand and the HUD in view - the hotbar, hearts: a how-to shot; the chat kept out)
+ * hud chat                  (and the chat too: a command typed in it)
  * third                     (the camera apart from the player, who stays where they stand and is seen: a shot of the
  *                            player - put them in place with the commands; the dead come for them, not the camera)
  * film                      (the camera left to a film of the game's own - client/FilmCamera, started by a command
@@ -98,7 +102,7 @@ public final class CameraPath {
     }
 
     private record Path_(List<Key> keys, List<String> start, List<Cue> cues, String ease, int fps, double slow, GameType mode, boolean hand,
-            double shake, boolean film, boolean third) {
+            double shake, boolean film, boolean third, boolean hud, boolean chat) {
         double length() {
             return this.keys.getLast().t();
         }
@@ -207,6 +211,8 @@ public final class CameraPath {
         boolean hand = false;
         boolean film = false;
         boolean third = false;
+        boolean hud = false;
+        boolean chat = false;
         try {
             int n = 0;
             for (String raw : Files.readAllLines(file, StandardCharsets.UTF_8)) {
@@ -248,6 +254,10 @@ public final class CameraPath {
                     mode = GameType.byName(line.substring(5).strip(), GameType.SPECTATOR);
                 } else if (line.equals("hand")) {
                     hand = true;
+                } else if (line.equals("hud") || line.equals("hud chat")) {
+                    hand = true;
+                    hud = true;
+                    chat = line.endsWith("chat");
                 } else if (line.equals("film")) {
                     film = true;
                 } else if (line.equals("third")) {
@@ -293,7 +303,7 @@ public final class CameraPath {
             unwound.add(new Key(k.t(), k.x(), k.y(), k.z(), yaw, k.pitch(), k.roll(), k.fov()));
             last = yaw;
         }
-        return new Path_(unwound, start, cues, ease, fps, slow, mode, hand, shake, film, third);
+        return new Path_(unwound, start, cues, ease, fps, slow, mode, hand, shake, film, third, hud, chat);
     }
 
     /** The game's time now, in ticks with the part of a tick this frame is drawn at. */
@@ -635,7 +645,15 @@ public final class CameraPath {
     /** With the hand in view the HUD is not hidden, so it is not drawn instead - nor the outline on the block looked at. */
     @SubscribeEvent
     static void onGui(RenderGuiEvent.Pre event) {
-        if (playing != null && playing.hand()) {
+        if (playing != null && playing.hand() && !playing.hud()) {
+            event.setCanceled(true);
+        }
+    }
+
+    /** In a HUD shot the chat is left out, unless the path shows it: the path's own commands would be read in it. */
+    @SubscribeEvent
+    static void onGuiLayer(RenderGuiLayerEvent.Pre event) {
+        if (playing != null && playing.hud() && !playing.chat() && event.getName().equals(VanillaGuiLayers.CHAT)) {
             event.setCanceled(true);
         }
     }

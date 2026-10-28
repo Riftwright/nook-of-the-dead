@@ -50,10 +50,12 @@ public class ScrawledMapItem extends Item {
         ItemStack held = player.getItemInHand(hand);
         held.consume(1, player);
         if (held.isEmpty()) {
-            player.setItemInHand(hand, map);
-        } else {
-            player.getInventory().placeItemBackInInventory(map, net.minecraft.util.Prediction.SERVER_ONLY);
+            // the map handed back as what the scrawl became: after a use the game puts that in the hand
+            // (ItemStack#use, ServerPlayerGameMode#useItem), so a map set in the hand here was overwritten with the
+            // emptied scrawl and lost - in survival the institute's map never came (found filming, 2026-10-29)
+            return InteractionResult.SUCCESS_SERVER.heldItemTransformedTo(map);
         }
+        player.getInventory().placeItemBackInInventory(map, net.minecraft.util.Prediction.SERVER_ONLY);
         return InteractionResult.SUCCESS_SERVER;
     }
 }

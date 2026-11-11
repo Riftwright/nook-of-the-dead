@@ -306,7 +306,8 @@ final class SensesTests {
                     check(helper, net.minecraft.locale.Language.getInstance().has(key), key + " untranslated");
                 }
             }
-            long ours = all.stream().filter(a -> a.id().getNamespace().equals(dev.nookofthedead.NookOfTheDead.MODID)).count();
+            long ours = all.stream().filter(a -> a.id().getNamespace().equals(dev.nookofthedead.NookOfTheDead.MODID)
+                    && !a.id().getPath().startsWith("recipes/")).count();          // the recipe book's unlocks show in no tab
             check(helper, ours == names.length, "an advancement not checked here: " + ours);
             ServerPlayer drinker = player(helper, GameType.SURVIVAL);
             try {

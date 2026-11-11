@@ -52,7 +52,9 @@ public final class Institute {
                         continue;
                     }
                     long[] site = site(seed, qx, qz);
-                    if (site == null) {
+                    // only one laid down: none by the second institute or in the capital (the audit, 2026-10-29: the map
+                    // marked a site there, where no institute stands, and the scrawl was spent on it)
+                    if (site == null || !at(seed, (int) site[0], (int) site[1])) {
                         continue;
                     }
                     int cx = (int) site[0] * Town.BLOCK + Town.BLOCK / 2;

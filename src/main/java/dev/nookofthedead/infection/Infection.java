@@ -43,8 +43,21 @@ import net.neoforged.neoforge.registries.NeoForgeRegistries;
 @EventBusSubscriber(modid = NookOfTheDead.MODID)
 public final class Infection {
     public static final int NONE = -1;
-    /** Fifteen minutes (the user, 2026-10-19: "抑制ポーションの効果は15分にする"). */
+    /**
+     * Fifteen minutes (the user, 2026-10-19: "抑制ポーションの効果は15分にする"): the default; what a dose holds now is
+     * {@link #full()}, as the settings say.
+     */
     public static final int FULL = 20 * 60 * 15;
+
+    /** What a suppressant holds the infection back for now, in ticks ({@link dev.nookofthedead.ZwConfig#SUPPRESSANT_MINUTES}). */
+    public static int full() {
+        return dev.nookofthedead.ZwConfig.suppressantTicks();
+    }
+
+    /** What a long one holds it back for now: twice {@link #full()}. */
+    public static int longDose() {
+        return 2 * full();
+    }
     /** The last three: the head swims (the user, 2026-10-19: "3分前に目眩"). */
     public static final int SYMPTOMS = 20 * 60 * 3;
     /** The last one: legs heavy, the light going. */
@@ -73,20 +86,20 @@ public final class Infection {
         if (infected(player)) {
             return;
         }
-        player.setData(LEFT, FULL);
+        player.setData(LEFT, full());
         player.level().playSound(null, player.blockPosition(), SoundEvents.ZOMBIE_INFECT, SoundSource.PLAYERS, 0.8F, 0.8F);
         ZwAdvancements.award(player, "root");
     }
 
-    /** A dose redstone lengthened: thirty minutes. */
+    /** A dose redstone lengthened: thirty minutes by default ({@link #longDose()} now). */
     public static final int LONG = 20 * 60 * 30;
 
-    /** A suppressant drunk: fifteen minutes again, the swimming head gone - and if it swam, felt clearing. */
+    /** A suppressant drunk: {@link #full()} again, the swimming head gone - and if it swam, felt clearing. */
     public static void suppress(ServerPlayer player) {
-        suppress(player, FULL);
+        suppress(player, full());
     }
 
-    /** The same, holding it back {@code ticks} (a long dose: {@link #LONG}). */
+    /** The same, holding it back {@code ticks} (a long dose: {@link #longDose()}). */
     public static void suppress(ServerPlayer player, int ticks) {
         if (!infected(player)) {
             return;              // nothing to hold back (the review, 2026-10-19: one drunk at home made a player "infected" there)

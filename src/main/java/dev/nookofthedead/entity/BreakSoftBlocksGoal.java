@@ -147,7 +147,8 @@ public class BreakSoftBlocksGoal extends Goal {
      */
     private boolean breakable(ServerLevel level, BlockPos at, int up) {
         BlockState state = level.getBlockState(at);
-        if (!state.is(this.mind.breaks()) || state.getDestroySpeed(level, at) < 0 || !CommonHooks.canEntityDestroy(level, at, this.mob)) {
+        if (!state.is(this.mind.breaks()) || state.getDestroySpeed(level, at) < 0 || !CommonHooks.canEntityDestroy(level, at, this.mob)
+                || !mirrorsBreak(state)) {
             return false;
         }
         var shape = state.getCollisionShape(level, at);
@@ -155,6 +156,11 @@ public class BreakSoftBlocksGoal extends Goal {
             return false;
         }
         return up > 0 || at.getY() + shape.max(Direction.Axis.Y) > this.mob.getY() + this.mob.maxUpStep();
+    }
+
+    /** Whether {@code state} may be broken as far as the mirror setting goes: anything but an If Mirror while it is off. */
+    private static boolean mirrorsBreak(BlockState state) {
+        return dev.nookofthedead.ZwConfig.mirrorsSmashed() || !state.is(dev.nookworks.registry.ModTravel.IF_MIRROR.get());
     }
 
     @Override
@@ -170,6 +176,7 @@ public class BreakSoftBlocksGoal extends Goal {
     public boolean canContinueToUse() {
         return this.target != null && this.mob.level() instanceof ServerLevel level && this.heading(level) != null && this.time <= this.needed
                 && this.mind.breaks() != null && this.mob.level().getBlockState(this.target).is(this.mind.breaks())
+                && mirrorsBreak(this.mob.level().getBlockState(this.target))
                 && this.target.closerToCenterThan(this.mob.position(), 2.5)
                 && !dev.nookofthedead.world.Refuge.guarded(level, this.target);    // Dark Matter set down mid-blow stops it too
     }

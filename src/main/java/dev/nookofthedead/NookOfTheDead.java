@@ -15,6 +15,7 @@ import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
 
 /**
  * Nook of the Dead: Nookworks' If remade as a world whose civilisation fell to a zombie plague overnight.
@@ -37,6 +38,7 @@ public final class NookOfTheDead {
         ZwItems.TABS.register(modEventBus);
         ZwEntities.ENTITY_TYPES.register(modEventBus);
         Infection.ATTACHMENT_TYPES.register(modEventBus);
+        modContainer.registerConfig(ModConfig.Type.SYNCED, ZwConfig.SPEC, "nookofthedead-server.toml");
         registerGameTests(modEventBus);
     }
 

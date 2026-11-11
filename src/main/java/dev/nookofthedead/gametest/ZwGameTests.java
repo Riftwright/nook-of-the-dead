@@ -54,8 +54,11 @@ public final class ZwGameTests {
         CatTests.register();
         CapitalTests.register();
         RegressionTests.register();
+        PlayTests.register();
         EndingTests.registerLoopholes();
         ShelterTests.registerTraces();
+        SettingsTests.register();
+        SleepTests.register();
     }
 
     public static void register(IEventBus modEventBus) {

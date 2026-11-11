@@ -75,6 +75,8 @@ final class ShelterTests {
                     throw helper.assertionException(Component.literal("not bitten yet"));
                 }
                 bat.discard();
+                // taken out again: left on the server, it stayed awake there and kept the If's sleepers from their night
+                ZwGameTests.leave(helper, prey);
             });
         });
 

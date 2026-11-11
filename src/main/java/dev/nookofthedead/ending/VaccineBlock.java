@@ -77,6 +77,9 @@ public class VaccineBlock extends Block {
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        if (state.getValue(KEYS) < NEEDED && player.getOffhandItem().is(dev.nookofthedead.registry.ZwItems.LAUNCH_KEY.get())) {
+            return InteractionResult.PASS;          // on to the key in the other hand (the audit, 2026-10-29: it never went in)
+        }
         if (!(level instanceof ServerLevel server) || !(player instanceof ServerPlayer user)) {
             return InteractionResult.SUCCESS;
         }

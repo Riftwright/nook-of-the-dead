@@ -1,5 +1,28 @@
 # Changelog
 
+## 1.1.0 - 2026-11
+
+Requires Nookworks 1.1.0 or later (any 1.x), NeoForge 26.3.
+
+- **The sky base's key-holders keep their keys**: one standing still in its room with no one near could vanish with its
+  launch key, and the vaccine could then never be started. One carrying a key never despawns now.
+- **Peaceful keeps them too**: on Peaceful the key-holders were never made (or were taken away), and two of the four keys
+  with them. They stay there now, harmless as the Vandal is.
+- **The Scrawled Map marks only an institute that is there**: near the capital or the second institute it could mark empty
+  ground.
+- The Vandal leaves its blood even with the `mobDrops` rule off.
+- A launch key in the offhand goes into the console.
+- A crash during a film no longer leaves the player floating.
+- The dead leave the If Mirror alone while a player beside it is watching a film.
+- **The Makeshift Grenade, the Scrawled Map and Cleansed Flesh show in the recipe book** once you pick up gunpowder, a map
+  scrap or the Vandal's blood.
+- **Settings** (in a world: Esc > Mods > Nook of the Dead > Config): **Elytra in the If** turns gliding off in the zombie world, for those
+  who would rather go on foot. On by default, as before; the usual world, the Nether and the End are not affected.
+  **Zombies** (Fewer / Normal / More) sets how many gather round each player in the If - fewer is less tiring and
+  lighter on the computer. **Suppressant Duration** (5 to 60 minutes, 15 by default; a long suppressant twice that).
+  **Zombies Break If Mirrors**, on by default: off, the dead leave your way home be. Every default is the game as it was.
+- Nook of the Dead's icon shows in the mod list.
+
 ## 1.0.1 - 2026-10
 
 Requires Nookworks 1.1.0 or later (any 1.x), NeoForge 26.3.

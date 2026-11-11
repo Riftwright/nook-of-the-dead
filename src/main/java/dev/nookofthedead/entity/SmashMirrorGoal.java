@@ -67,9 +67,12 @@ public class SmashMirrorGoal extends Goal {
         this.setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
     }
 
-    /** The If's mirror (its lower half), if it stands, loaded, in {@code level}; null elsewhere. */
+    /**
+     * The If's mirror (its lower half), if it stands, loaded, in {@code level}; null elsewhere, and while the settings keep
+     * the dead off mirrors ({@link dev.nookofthedead.ZwConfig#MIRRORS_SMASHED}).
+     */
     public static @Nullable BlockPos mirrorIn(ServerLevel level) {
-        if (!NookOfTheDead.fallen(level)) {
+        if (!NookOfTheDead.fallen(level) || !dev.nookofthedead.ZwConfig.mirrorsSmashed()) {
             return null;
         }
         BlockPos pos = IfWorld.get(level.getServer()).ifMirror();
@@ -79,12 +82,17 @@ public class SmashMirrorGoal extends Goal {
     @Override
     public boolean canUse() {
         if (this.mob.getTarget() != null || (this.mob.tickCount + this.mob.getId()) % 20 != 0 || this.mob.tickCount < this.restUntil
-                || !(this.mob.level() instanceof ServerLevel level)) {
+                || !(this.mob.level() instanceof ServerLevel level) || !dev.nookofthedead.ZwConfig.mirrorsSmashed()) {
             return false;
         }
         BlockPos pos = this.mirrors.apply(level);
         if (pos == null || !level.isLoaded(pos) || !IfMirrors.standsAt(level, pos) || pos.distToCenterSqr(this.mob.position()) > SCENT * SCENT || !CommonHooks.canEntityDestroy(level, pos, this.mob)
                 || dev.nookofthedead.world.Refuge.guarded(level, pos)) {      // a mirror in Dark Matter's reach is left be
+            return false;
+        }
+        // nor while one by it watches a film, held where they stand (the audit, 2026-10-29: the opening holds a newcomer by
+        // the mirror for half a minute, and the dead about took it from under them)
+        if (watched(level, pos)) {
             return false;
         }
         this.mirror = pos;
@@ -108,7 +116,15 @@ public class SmashMirrorGoal extends Goal {
     @Override
     public boolean canContinueToUse() {
         return this.mirror != null && !this.done && this.mob.getTarget() == null && this.mob.tickCount - this.started < LONGEST
-                && this.mob.level().getBlockState(this.mirror).is(ModTravel.IF_MIRROR.get());
+                && dev.nookofthedead.ZwConfig.mirrorsSmashed()                  // turned off mid-blow, it stops
+                && this.mob.level().getBlockState(this.mirror).is(ModTravel.IF_MIRROR.get())
+                && !(this.mob.level() instanceof ServerLevel level && watched(level, this.mirror));
+    }
+
+    /** Whether one within {@link #SCENT} of the mirror at {@code pos} is watching a film. */
+    private static boolean watched(ServerLevel level, BlockPos pos) {
+        return level.getNearestPlayer(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, SCENT,
+                p -> p instanceof net.minecraft.world.entity.player.Player watcher && dev.nookofthedead.ending.Film.watching(watcher)) != null;
     }
 
     @Override
@@ -142,7 +158,7 @@ public class SmashMirrorGoal extends Goal {
      * for {@link BreakSoftBlocksGoal}. Null when it has none, or has given the mirror up for now.
      */
     public @Nullable BlockPos heading(ServerLevel level) {
-        if (this.going == null || this.mob.tickCount >= this.errandUntil || this.resting()
+        if (this.going == null || this.mob.tickCount >= this.errandUntil || this.resting() || !dev.nookofthedead.ZwConfig.mirrorsSmashed()
                 || !level.getBlockState(this.going).is(ModTravel.IF_MIRROR.get()) || this.mob.getTarget() != null) {
             return null;
         }

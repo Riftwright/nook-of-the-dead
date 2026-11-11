@@ -68,6 +68,36 @@ public class LaunchKeyItem extends Item {
     }
 
     /**
+     * One of the dead with a key in its hands never despawns (the audit, 2026-10-29: the sky base's key-holders, standing in
+     * their rooms with no one near, went with their keys and closed the road) - but on peaceful, where the game takes every
+     * monster away, its key is counted lost, to turn up before the console. Last, over whatever else decided.
+     */
+    @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.LOWEST)
+    static void onDespawn(net.neoforged.neoforge.event.entity.living.MobDespawnEvent event) {
+        net.minecraft.world.entity.Mob mob = event.getEntity();
+        if (!(mob.level() instanceof ServerLevel level)) {
+            return;
+        }
+        int keys = 0;
+        for (net.minecraft.world.entity.EquipmentSlot slot : net.minecraft.world.entity.EquipmentSlot.VALUES) {
+            ItemStack worn = mob.getItemBySlot(slot);
+            if (worn.is(ZwItems.LAUNCH_KEY.get())) {
+                keys += worn.getCount();
+            }
+        }
+        if (keys == 0) {
+            return;
+        }
+        if (level.getDifficulty() == net.minecraft.world.Difficulty.PEACEFUL && !mob.getType().isAllowedInPeaceful()) {
+            if (event.getResult() != net.neoforged.neoforge.event.entity.living.MobDespawnEvent.Result.DENY) {
+                dev.nookofthedead.ending.LostKeys.lost(level.getServer(), keys);
+            }
+        } else {
+            event.setResult(net.neoforged.neoforge.event.entity.living.MobDespawnEvent.Result.DENY);
+        }
+    }
+
+    /**
      * One of the dead with a key in its hands put down where the game drops nothing from mobs (the {@code mob_drops} rule
      * off): its key counted lost, to turn up before the console (in game, 2026-10-23: a world with the rule off had the
      * key-holders' keys gone with them).

@@ -117,6 +117,11 @@ public final class VandalKeeper {
         kept.setDirty();
         BlockPos block = block(home);
         RefugeRooms.open(level, block != null ? block : vandal.blockPosition());
+        // its blood all the same where the game drops nothing from mobs: each Vandal dies once, and the vial is the way to
+        // the suppressant made at home (the audit, 2026-10-29), as a launch key is (LaunchKeyItem#onDeath)
+        if (!level.getGameRules().get(net.minecraft.world.level.gamerules.GameRules.MOB_DROPS)) {
+            vandal.spawnAtLocation(level, new net.minecraft.world.item.ItemStack(dev.nookofthedead.registry.ZwItems.VANDAL_BLOOD.get()));
+        }
     }
 
     /** A block of the institute {@code key} names, its corner; null if it names none. */

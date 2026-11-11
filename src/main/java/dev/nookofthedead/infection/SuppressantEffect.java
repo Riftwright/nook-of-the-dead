@@ -39,7 +39,7 @@ public class SuppressantEffect extends InstantaneousMobEffect {
     public void applyInstantaneousEffect(ServerLevel level, @Nullable Entity source, @Nullable Entity owner, LivingEntity mob, int amplification,
             double scale) {
         if (mob instanceof ServerPlayer player) {
-            Infection.suppress(player, amplification > 0 ? Infection.LONG : Infection.FULL);   // the long one's level is 1
+            Infection.suppress(player, amplification > 0 ? Infection.longDose() : Infection.full());   // the long one's level is 1
         } else if (mob instanceof Mutated && mob instanceof Zombie zombie && zombie.isAlive()) {
             subdue(level, zombie);
             if (owner instanceof ServerPlayer thrower) {

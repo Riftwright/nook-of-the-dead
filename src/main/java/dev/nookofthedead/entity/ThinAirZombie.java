@@ -41,6 +41,26 @@ public class ThinAirZombie extends MutatedZombie {
                 .add(Attributes.SAFE_FALL_DISTANCE, 8.0);
     }
 
+    /**
+     * On Peaceful, gone as every monster is - but one with a launch key in its hands is kept, harmless as the Vandal is there
+     * (the audit, 2026-10-29: the type was not let into a Peaceful world at all, so the sky base's key-holders were never
+     * made, or dropped as their chunk loaded, or taken away - and two of the four keys with them, for good). So the type is
+     * let in on Peaceful ({@link dev.nookofthedead.registry.ZwEntities#THIN_AIR_ZOMBIE}), and those without a key go here.
+     */
+    @Override
+    public void checkDespawn() {
+        if (this.level().getDifficulty() != net.minecraft.world.Difficulty.PEACEFUL) {
+            super.checkDespawn();
+            return;
+        }
+        for (net.minecraft.world.entity.EquipmentSlot slot : net.minecraft.world.entity.EquipmentSlot.VALUES) {
+            if (this.getItemBySlot(slot).is(dev.nookofthedead.registry.ZwItems.LAUNCH_KEY.get())) {
+                return;
+            }
+        }
+        this.discard();
+    }
+
     /** Its slow deep breath, seen as frost in the cold (the visual review, 2026-10-19). */
     @Override
     public void tick() {

@@ -90,7 +90,7 @@ public final class ZwCommands {
                 .then(Commands.literal("infection")
                         .executes(c -> left(c.getSource().getPlayerOrException()))
                         .then(Commands.literal("clear").executes(c -> clear(c.getSource().getPlayerOrException())))
-                        .then(Commands.argument("seconds", IntegerArgumentType.integer(0, Infection.FULL / 20))
+                        .then(Commands.argument("seconds", IntegerArgumentType.integer(0, 2 * 60 * ZwConfig.SUPPRESSANT_MOST))
                                 .executes(c -> infection(c.getSource().getPlayerOrException(), IntegerArgumentType.getInteger(c, "seconds")))))
                 .then(Commands.literal("variant").then(Commands.argument("building", StringArgumentType.word())
                         .then(Commands.argument("name", StringArgumentType.word()).then(Commands.argument("from", BlockPosArgument.blockPos())

@@ -46,6 +46,13 @@ public final class Unkept {
         if (mob.entityTags().contains(Turning.RISEN) || mob.entityTags().contains(KEPT)) {
             return false;                                                    // kept as they always were, wherever they are
         }
+        // nor one with a launch key in its hands: the sky base's key-holders stand still in their rooms, and two minutes on
+        // with no one near they went - and their keys with them, the end of the road closed (the audit, 2026-10-29)
+        for (net.minecraft.world.entity.EquipmentSlot slot : net.minecraft.world.entity.EquipmentSlot.VALUES) {
+            if (mob.getItemBySlot(slot).is(dev.nookofthedead.registry.ZwItems.LAUNCH_KEY.get())) {
+                return false;
+            }
+        }
         if (mob.isPassenger() || mob.isLeashed() || mob.hasCustomName()) {
             return true;
         }

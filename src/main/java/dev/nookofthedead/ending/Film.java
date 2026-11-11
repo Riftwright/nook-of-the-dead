@@ -260,6 +260,18 @@ public final class Film {
         return SESSIONS.values().stream().anyMatch(s -> s.kind == kind);
     }
 
+    /**
+     * Back in with no film playing: never left floating or unseen by one cut off by a crash after a save mid-film (the
+     * audit, 2026-10-29: the game saves a player's NoGravity, and nothing put it back). No player has either of their own.
+     */
+    @SubscribeEvent
+    static void onJoin(PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player && !SESSIONS.containsKey(player.getUUID())) {
+            player.setNoGravity(false);
+            player.setInvisible(player.hasEffect(net.minecraft.world.effect.MobEffects.INVISIBILITY));
+        }
+    }
+
     @SubscribeEvent
     static void onLeave(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {

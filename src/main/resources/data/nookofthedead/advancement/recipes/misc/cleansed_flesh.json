@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_vandal_blood": {
+      "conditions": {
+        "items": [
+          {
+            "items": "nookofthedead:vandal_blood"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "nookofthedead:cleansed_flesh"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_vandal_blood"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "nookofthedead:cleansed_flesh"
+    ]
+  }
+}

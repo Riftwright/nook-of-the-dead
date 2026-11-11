@@ -124,8 +124,16 @@ public final class Horde {
     public static final int PER_WAVE = 6;
     public static final double MIN_FROM = 24.0;
     public static final double MAX_FROM = 46.0;
-    /** However many play, no more than this many runners in the fallen world from the horde. */
+    /**
+     * However many play, no more than this many runners in the fallen world from the horde: at the usual crowd ({@link
+     * #worldMax()} as the settings say).
+     */
     public static final int WORLD_MAX = 220;
+
+    /** The most from the horde in the fallen world now: {@link #WORLD_MAX}, as many times over as the crowd setting. */
+    public static int worldMax() {
+        return (int) Math.round(WORLD_MAX * dev.nookofthedead.ZwConfig.crowd());
+    }
     /** Moving at least this fast (blocks a second, flat) is getting away: walking (4.3) and running (5.6) both are. */
     public static final double MOVING = 2.0;
     /** A runner this far behind someone getting away, along their way, out of their sight, has lost them. */
@@ -153,7 +161,8 @@ public final class Horde {
                 + level.getEntities(ZwEntities.MUTATED_ZOMBIE_VILLAGER.get(), r -> true).size()
                 + level.getEntities(ZwEntities.MUTATED_HUSK.get(), r -> true).size();
         List<ServerPlayer> players = level.players();
-        if (total >= WORLD_MAX) {
+        int most = worldMax();
+        if (total >= most) {
             // full: the ones far from everyone, after nobody, make room (a player come late found the cap taken by the
             // crowds of those before, and none came for them)
             total -= thin(level, players);
@@ -161,7 +170,7 @@ public final class Horde {
         // starting with a different player each wave, so that under the cap nobody is always the one left out (r1)
         int first = players.isEmpty() ? 0 : (int) (level.getGameTime() / EVERY % players.size());
         for (int i = 0; i < players.size(); i++) {
-            if (total >= WORLD_MAX) {
+            if (total >= most) {
                 return;
             }
             ServerPlayer player = players.get((first + i) % players.size());
@@ -233,11 +242,11 @@ public final class Horde {
         }
         // as many as the region holds: the town the most, the wilds the fewest (Region#dead)
         // and more in the rain, more still in a storm (the user, 2026-10-17: "天気で群れが変わる")
-        // and as many more or fewer as the game is hard (Hardness, 2026-10-23)
+        // and as many more or fewer as the game is hard (Hardness, 2026-10-23), and as the settings ask (ZwConfig#CROWD)
         Hardness hardness = Hardness.of(level);
         int want = (int) Math.round((level.isDarkOutside() ? NIGHT : DAY)
                 * dev.nookofthedead.world.Region.at(level.getSeed(), player.getBlockX(), player.getBlockZ()).dead * weather(level)
-                * hardness.crowd());
+                * hardness.crowd() * dev.nookofthedead.ZwConfig.crowd());
         // what they put down buys them a while
         want = Math.max((int) Math.round(want * hardness.calmFloor()), want - calm(level, player));
         boolean sheltered = sheltered(level, player);

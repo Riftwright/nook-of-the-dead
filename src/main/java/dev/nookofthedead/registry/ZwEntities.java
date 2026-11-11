@@ -118,7 +118,7 @@ public final class ZwEntities {
     public static final Supplier<EntityType<dev.nookofthedead.entity.ThinAirZombie>> THIN_AIR_ZOMBIE = ENTITY_TYPES.register("thin_air_zombie",
             () -> EntityType.Builder.<dev.nookofthedead.entity.ThinAirZombie>of(dev.nookofthedead.entity.ThinAirZombie::new, MobCategory.MONSTER)
                     .sized(0.6F, 1.95F).eyeHeight(1.74F).passengerAttachments(2.0125F).ridingOffset(-0.7F)
-                    .clientTrackingRange(8).notInPeaceful()
+                    .clientTrackingRange(8)
                     .build(ResourceKey.create(Registries.ENTITY_TYPE, NookOfTheDead.id("thin_air_zombie"))));
     public static final Supplier<EntityType<dev.nookofthedead.entity.SentryGolem>> SENTRY_GOLEM = ENTITY_TYPES.register("sentry_golem",
             () -> EntityType.Builder.<dev.nookofthedead.entity.SentryGolem>of(dev.nookofthedead.entity.SentryGolem::new, MobCategory.MONSTER)

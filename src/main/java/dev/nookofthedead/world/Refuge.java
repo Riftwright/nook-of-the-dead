@@ -286,6 +286,7 @@ public final class Refuge {
             return;
         }
         sealOld(player);
+        towerRefit(player);
         RefugeRooms.retrofit(player);
         RefugeRooms.watch(player);
         SkyBase.refit(player);
@@ -319,6 +320,92 @@ public final class Refuge {
         }
         done.refuges.add(key);
         done.setDirty();
+    }
+
+    /** The machine room's five whole towers, by the template's x: the Vacuum Distiller at y 3, the Condenser at y 6, z 58. */
+    static final int[] TOWERS = {28, 33, 38, 43, 48};
+    /** The line's side of the towers, where the Mercury Pipes run (z), and the floor the line's pipe is on (y). */
+    static final int LINE_Z = 59, LINE_Y = 3, CONDENSER_Y = 6;
+
+    /**
+     * Each tower's mercury piped down from its Condenser to the line beneath. Nookworks 1.6 (2026-11-13) sends a tower's
+     * mercury out at its Condenser only, where up to 1.5 the Distiller sent it from its own sides - into the line's pipe
+     * beside it, the way the room was built. With 1.6 the mercury stayed in the Distillers: the tanks ran dry into the
+     * line and each Distiller filled until it stopped, about ten minutes after the lever (the user, 2026-11-14: 「地下研究室の
+     * 避難所に置いてある機械が、動かないものがある気がする」). A pipe down from each Condenser's line side to the line's pipe puts it
+     * back in the round. Under an older Nookworks the pipe by the Condenser joins nothing and the Distiller's own side
+     * still does the work. Set only where all three places are air, on a tower still standing whole.
+     */
+    public static void towerPipes(net.minecraft.world.level.LevelAccessor level, BlockPos under, StructurePlaceSettings settings,
+            BoundingBox box, int flags) {
+        net.minecraft.core.Direction toTower = settings.getRotation().rotate(settings.getMirror().mirror(net.minecraft.core.Direction.NORTH));
+        net.minecraft.world.level.block.Block pipe = dev.nookworks.registry.ModBlocks.MERCURY_PIPE.get();
+        for (int x : TOWERS) {
+            BlockPos base = StructureTemplate.calculateRelativePosition(settings, new BlockPos(x, LINE_Y, LINE_Z - 1)).offset(under);
+            BlockPos line = StructureTemplate.calculateRelativePosition(settings, new BlockPos(x, LINE_Y, LINE_Z)).offset(under);
+            if (!box.isInside(line) || !box.isInside(line.above(CONDENSER_Y - LINE_Y))
+                    || !level.getBlockState(base).is(dev.nookworks.registry.ModBlocks.DISTILLER.get())
+                    || !level.getBlockState(base.above(CONDENSER_Y - LINE_Y)).is(dev.nookworks.registry.ModBlocks.CONDENSER.get())
+                    || !level.getBlockState(line).is(pipe)) {
+                continue;
+            }
+            boolean free = true;
+            for (int y = LINE_Y + 1; y <= CONDENSER_Y; y++) {
+                free &= level.getBlockState(line.above(y - LINE_Y)).isAir();
+            }
+            if (!free) {
+                continue;
+            }
+            var joins = net.minecraft.world.level.block.PipeBlock.PROPERTY_BY_DIRECTION;
+            level.setBlock(line, level.getBlockState(line).setValue(joins.get(net.minecraft.core.Direction.UP), true), flags);
+            for (int y = LINE_Y + 1; y <= CONDENSER_Y; y++) {
+                net.minecraft.world.level.block.state.BlockState state = pipe.defaultBlockState();
+                for (net.minecraft.core.Direction d : net.minecraft.core.Direction.values()) {
+                    state = state.setValue(joins.get(d), d == net.minecraft.core.Direction.DOWN
+                            || d == net.minecraft.core.Direction.UP && y < CONDENSER_Y || d == toTower && y == CONDENSER_Y);
+                }
+                level.setBlock(line.above(y - LINE_Y), state, flags);
+            }
+        }
+    }
+
+    /**
+     * A machine room made before {@link #towerPipes} is given them the first time a player comes within {@link #SEAL_FROM}
+     * of its refuge, the towers' chunks loaded - once only (kept with the world, {@link Retrofitted}); a tower taken down or
+     * built round since is left as it is.
+     */
+    static void towerRefit(net.minecraft.server.level.ServerPlayer player) {
+        ServerLevel level = player.level();
+        if (!dev.nookofthedead.NookOfTheDead.fallen(level)) {
+            return;
+        }
+        int bx = Math.floorDiv(player.getBlockX(), Town.BLOCK);
+        int bz = Math.floorDiv(player.getBlockZ(), Town.BLOCK);
+        BoundingBox refuge = box(level, bx, bz);
+        if (refuge == null || !refuge.inflatedBy(SEAL_FROM).isInside(player.blockPosition())) {
+            return;
+        }
+        Retrofitted done = level.getServer().getDataStorage().computeIfAbsent(Retrofitted.TYPE);
+        String key = "towers:" + dev.nookworks.ifworld.IfWorld.get(level.getServer()).number() + ":" + bx + "," + bz;
+        Town.Lot lot = Town.lots(level.getSeed(), bx, bz).stream().filter(l -> l.building().map(Town.INSTITUTE::equals).orElse(false))
+                .findFirst().orElse(null);
+        StructureTemplate deep = level.getServer().getStructureTemplateManager().get(Town.INSTITUTE_DEEP).orElse(null);
+        if (done.refuges.contains(key) || lot == null || deep == null) {
+            return;
+        }
+        BlockPos under = Town.deepOrigin(lot, deep);
+        StructurePlaceSettings settings = new StructurePlaceSettings().setRotation(lot.rotation()).setMirror(lot.mirror());
+        for (int x : TOWERS) {
+            BlockPos line = StructureTemplate.calculateRelativePosition(settings, new BlockPos(x, LINE_Y, LINE_Z)).offset(under);
+            BlockPos base = StructureTemplate.calculateRelativePosition(settings, new BlockPos(x, LINE_Y, LINE_Z - 1)).offset(under);
+            if (!level.isLoaded(line) || !level.isLoaded(base)) {
+                return;
+            }
+        }
+        towerPipes(level, under, settings, BoundingBox.infinite(), 3);
+        done.refuges.add(key);
+        done.setDirty();
+        dev.nookofthedead.NookOfTheDead.LOGGER.info("The machine room at {} given its towers' mercury pipes (Nookworks 1.6)", under);
     }
 
     /**

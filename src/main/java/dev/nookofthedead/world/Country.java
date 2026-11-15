@@ -222,6 +222,19 @@ public final class Country {
         if (!level.getBlockState(at.set(x, t + 1, z)).isAir()) {
             return;
         }
+        BlockState ground = level.getBlockState(at.set(x, t, z));
+        if (ground.is(net.minecraft.tags.BlockTags.SAND)) {
+            // on sand, what grows on sand (the audit, 2026-11-15: grass, ferns, flowers and berry bushes on the desert's sand)
+            if (r < 40) {
+                level.setBlock(at.set(x, t + 1, z), Blocks.DEAD_BUSH.defaultBlockState(), 2);
+            } else if (r < 160) {
+                level.setBlock(at.set(x, t + 1, z), (r < 110 ? Blocks.SHORT_DRY_GRASS : Blocks.TALL_DRY_GRASS).defaultBlockState(), 2);
+            }
+            return;
+        }
+        if (!ground.is(net.minecraft.tags.BlockTags.DIRT)) {
+            return;                                                      // nothing grows on stone or a path
+        }
         // the tall growth in thickets, not everywhere (the user, 2026-10-16: some cover for the dead to come out of
         // suddenly, but not grass all over - it hid everything, and weighed): deep in a thicket, open ground between
         int high = thicket(seed, x, z) ? 620 : 70;
@@ -281,6 +294,9 @@ public final class Country {
             return;
         }
         int r = (int) Math.floorMod(Town.hash(seed, x, z, 110), 1000);
+        if (!level.getBlockState(at.set(x, t, z)).is(net.minecraft.tags.BlockTags.DIRT)) {
+            return;                                                      // the desert's sand, a path: no meadow grass on it
+        }
         if (r < (thicket(seed, x, z) ? 700 : 90)) {
             tall(level, at, x, t, z, Blocks.TALL_GRASS);
         } else if (r < 820) {

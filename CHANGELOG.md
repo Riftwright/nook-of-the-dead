@@ -1,5 +1,52 @@
 # Changelog
 
+## 1.2.0 - 2026-11
+
+Requires **Nookworks 1.7.0** or later (any 1.x), NeoForge 26.3. **Back up your world before updating.** The new buildings
+and what is new inside the town's buildings appear only where the If has not been made yet: in an If you have been in,
+walk on to new ground, or roll a new If to see them everywhere.
+
+- **1.2: the world built over** - thirteen new buildings, what happened left in the town's rooms, chests that hold what such
+  a building held, Nookworks 1.7's framed pictures and laid tables, rooms and attics with time in them, tidier ruins.
+- **Thirteen new buildings**: the old town packed with narrow houses at last - a baker's, a printer's and bookbinder's, a
+  five-storey tenement with its washing out, a corner pharmacy with a turret; on the farms a dairy, an orchard house with
+  its cider press, a walled farmstead with its silo and gatehouse; in the wilds a fire lookout over its ranger's cabin, a
+  hunting lodge, a sawmill on its stream; at the edge of town a tannery, a horse-worked waterworks and a brickworks with
+  its kiln and tall chimney.
+- **What a building's chests hold is what such a building held**: a house's larder (salt, flour, rice, pickles, dried
+  fish) and linen, a tavern's stores and glasses, a forge's iron, coal and worn tools, a farm's seed, a clinic's bottles,
+  bandages and soap, a church's candles, a school's paper and ink, a guard post's kit, a store-house's bulk, a camp's last
+  few things - eleven kinds in place of one. The suppressant is as rare in them as before.
+- **What happened in a building is left in it**: nearly half the town's houses, shops and works now hold one of four
+  endings over the building as it was built - **ransacked** (its containers opened and emptied, its doors left open,
+  books thrown down, the rugs pulled up), **held** (the windows sheeted over, the doors piled shut from inside, a bed and
+  stores upstairs - and the one door broken in, blood inside it), **a nest** (bones and blood on the floors, webs in the
+  corners, some of the dead still in it) or **a last stand** (a body upstairs with its weapon and kit, the door below
+  broken, the dead still there).
+- **Pictures in frames, tables laid** (Nookworks 1.7): of the posters hung in a house, a shop, an inn, a church or an
+  office, nearly half are framed now - plain, dark oak or brass - never a notice, a warning or a stain; and here and there
+  a house's or an inn's table is laid for a meal no one sat down to, the food on the plates as itself, a mug, a glass.
+  The capital's houses too: plates on their kitchen and living-room tables, small pictures on their walls.
+- **The village houses are furnished** as the town's are: shelves with what was left on them, chairs at the tables,
+  lanterns long out, a rug.
+- **The marked stores hold more, and more kinds of things**: Nookworks' foods that keep, spears, copper tools, worn tools
+  and armour worn down, brewing odds and ends beside the medicine.
+- **Time in the rooms**: plaster down from the ceilings, leaves blown in at doors and broken windows, webs in the corners,
+  a book or a bottle dropped on the floor; what was put away under the eaves of the attics - crates, barrels, an old chest
+  with something in it, hay, a stool; bigger buildings more of it.
+- **The capital's homes lived in**: rugs laid whole in its living rooms and bedrooms, settees against the walls, a pan
+  left on the stove, candles, mugs, bottles, a dry plant or a pile of books on the cupboards, a stopped clock on the wall,
+  more chests, barrels and stools along the walls of its narrow rooms.
+- **Tidier ruins**: no lanterns, shelves or what stood on them hanging in the air once a building is worn, fallen in or
+  dressed - in the capital too; no ladders against nothing (a board behind them), bells hung as they can be; no body
+  lying through a chair, a barricade or a pew - the cathedral's dead sit in their pews; nothing set down over the
+  frames and things the builders laid on floors and desks; grass and flowers only where they can grow (sand plants on
+  the desert's sand); a building's timber repainted a shade lighter or darker, never turned into a patchwork.
+- **The refuge's machine room keeps running with Nookworks 1.6 and later**: since 1.6 a Vacuum Distiller's tower sends its
+  mercury out at its Condenser, so the room's mercury no longer went back to the line, and about ten minutes after the
+  lever its Distillers were full and stood still. Each tower now has a Mercury Pipe down from its Condenser to the line; a
+  room already made gets them the first time you come near it (only where the space is empty and the tower still stands).
+
 ## 1.1.0 - 2026-11
 
 Requires Nookworks 1.1.0 or later (any 1.x), NeoForge 26.3.

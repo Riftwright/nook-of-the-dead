@@ -12,96 +12,181 @@
           "type": "minecraft:item",
           "name": "minecraft:iron_nugget",
           "weight": 8,
-          "modifier": {
-            "type": "minecraft:set_count",
-            "count": {
-              "type": "minecraft:uniform",
-              "min": 2,
-              "max": 6
+          "modifier": [
+            {
+              "type": "minecraft:set_count",
+              "count": {
+                "type": "minecraft:uniform",
+                "min": 2,
+                "max": 8
+              }
             }
-          }
+          ]
         },
         {
           "type": "minecraft:item",
           "name": "minecraft:stone_pickaxe",
-          "weight": 5
+          "weight": 5,
+          "modifier": [
+            {
+              "type": "minecraft:set_damage",
+              "damage": {
+                "type": "minecraft:uniform",
+                "min": 0.3,
+                "max": 0.9
+              }
+            }
+          ]
         },
         {
           "type": "minecraft:item",
           "name": "minecraft:stone_axe",
-          "weight": 5
+          "weight": 5,
+          "modifier": [
+            {
+              "type": "minecraft:set_damage",
+              "damage": {
+                "type": "minecraft:uniform",
+                "min": 0.3,
+                "max": 0.9
+              }
+            }
+          ]
         },
         {
           "type": "minecraft:item",
           "name": "minecraft:iron_ingot",
           "weight": 4,
-          "modifier": {
-            "type": "minecraft:set_count",
-            "count": {
-              "type": "minecraft:uniform",
-              "min": 1,
-              "max": 3
+          "modifier": [
+            {
+              "type": "minecraft:set_count",
+              "count": {
+                "type": "minecraft:uniform",
+                "min": 1,
+                "max": 2
+              }
             }
-          }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:copper_ingot",
+          "weight": 4,
+          "modifier": [
+            {
+              "type": "minecraft:set_count",
+              "count": {
+                "type": "minecraft:uniform",
+                "min": 1,
+                "max": 3
+              }
+            }
+          ]
         },
         {
           "type": "minecraft:item",
           "name": "minecraft:shears",
-          "weight": 4
+          "weight": 4,
+          "modifier": [
+            {
+              "type": "minecraft:set_damage",
+              "damage": {
+                "type": "minecraft:uniform",
+                "min": 0.3,
+                "max": 0.9
+              }
+            }
+          ]
         },
         {
           "type": "minecraft:item",
           "name": "minecraft:flint_and_steel",
-          "weight": 4
+          "weight": 4,
+          "modifier": [
+            {
+              "type": "minecraft:set_damage",
+              "damage": {
+                "type": "minecraft:uniform",
+                "min": 0.3,
+                "max": 0.9
+              }
+            }
+          ]
         },
         {
           "type": "minecraft:item",
           "name": "minecraft:iron_chain",
           "weight": 4,
-          "modifier": {
-            "type": "minecraft:set_count",
-            "count": {
-              "type": "minecraft:uniform",
-              "min": 1,
-              "max": 3
+          "modifier": [
+            {
+              "type": "minecraft:set_count",
+              "count": {
+                "type": "minecraft:uniform",
+                "min": 1,
+                "max": 3
+              }
             }
-          }
+          ]
         },
         {
           "type": "minecraft:item",
           "name": "minecraft:ladder",
           "weight": 4,
-          "modifier": {
-            "type": "minecraft:set_count",
-            "count": {
-              "type": "minecraft:uniform",
-              "min": 2,
-              "max": 6
+          "modifier": [
+            {
+              "type": "minecraft:set_count",
+              "count": {
+                "type": "minecraft:uniform",
+                "min": 2,
+                "max": 6
+              }
             }
-          }
+          ]
         },
         {
           "type": "minecraft:item",
           "name": "nookworks:rope",
           "weight": 4,
-          "modifier": {
-            "type": "minecraft:set_count",
-            "count": {
-              "type": "minecraft:uniform",
-              "min": 2,
-              "max": 6
+          "modifier": [
+            {
+              "type": "minecraft:set_count",
+              "count": {
+                "type": "minecraft:uniform",
+                "min": 2,
+                "max": 6
+              }
             }
-          }
+          ]
         },
         {
           "type": "minecraft:item",
           "name": "minecraft:iron_pickaxe",
-          "weight": 3
+          "weight": 3,
+          "modifier": [
+            {
+              "type": "minecraft:set_damage",
+              "damage": {
+                "type": "minecraft:uniform",
+                "min": 0.2,
+                "max": 0.7
+              }
+            }
+          ]
         },
         {
           "type": "minecraft:item",
           "name": "minecraft:iron_shovel",
-          "weight": 3
+          "weight": 3,
+          "modifier": [
+            {
+              "type": "minecraft:set_damage",
+              "damage": {
+                "type": "minecraft:uniform",
+                "min": 0.2,
+                "max": 0.7
+              }
+            }
+          ]
         },
         {
           "type": "minecraft:item",
@@ -112,24 +197,46 @@
           "type": "minecraft:item",
           "name": "nookworks:thin_rope",
           "weight": 3,
-          "modifier": {
-            "type": "minecraft:set_count",
-            "count": {
-              "type": "minecraft:uniform",
-              "min": 2,
-              "max": 6
+          "modifier": [
+            {
+              "type": "minecraft:set_count",
+              "count": {
+                "type": "minecraft:uniform",
+                "min": 2,
+                "max": 6
+              }
             }
-          }
+          ]
         },
         {
           "type": "minecraft:item",
           "name": "nookworks:stone_hammer",
-          "weight": 3
+          "weight": 3,
+          "modifier": [
+            {
+              "type": "minecraft:set_damage",
+              "damage": {
+                "type": "minecraft:uniform",
+                "min": 0.3,
+                "max": 0.9
+              }
+            }
+          ]
         },
         {
           "type": "minecraft:item",
           "name": "minecraft:iron_axe",
-          "weight": 2
+          "weight": 2,
+          "modifier": [
+            {
+              "type": "minecraft:set_damage",
+              "damage": {
+                "type": "minecraft:uniform",
+                "min": 0.2,
+                "max": 0.7
+              }
+            }
+          ]
         },
         {
           "type": "minecraft:item",
@@ -144,6 +251,91 @@
         {
           "type": "minecraft:item",
           "name": "nookworks:iron_hammer",
+          "weight": 1,
+          "modifier": [
+            {
+              "type": "minecraft:set_damage",
+              "damage": {
+                "type": "minecraft:uniform",
+                "min": 0.2,
+                "max": 0.7
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "nookworks:copper_hammer",
+          "weight": 2,
+          "modifier": [
+            {
+              "type": "minecraft:set_damage",
+              "damage": {
+                "type": "minecraft:uniform",
+                "min": 0.3,
+                "max": 0.9
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "nookworks:oil_can",
+          "weight": 2
+        },
+        {
+          "type": "minecraft:item",
+          "name": "nookworks:zinc_ingot",
+          "weight": 2,
+          "modifier": [
+            {
+              "type": "minecraft:set_count",
+              "count": {
+                "type": "minecraft:uniform",
+                "min": 1,
+                "max": 2
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "nookworks:brass_ingot",
+          "weight": 1
+        },
+        {
+          "type": "minecraft:item",
+          "name": "nookworks:wool_shears",
+          "weight": 1,
+          "modifier": [
+            {
+              "type": "minecraft:set_damage",
+              "damage": {
+                "type": "minecraft:uniform",
+                "min": 0.3,
+                "max": 0.9
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:copper_pickaxe",
+          "weight": 2,
+          "modifier": [
+            {
+              "type": "minecraft:set_damage",
+              "damage": {
+                "type": "minecraft:uniform",
+                "min": 0.3,
+                "max": 0.9
+              }
+            }
+          ]
+        },
+        {
+          "type": "minecraft:item",
+          "name": "minecraft:spyglass",
           "weight": 1
         }
       ]

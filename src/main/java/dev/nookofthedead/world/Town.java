@@ -1638,7 +1638,7 @@ public final class Town {
     }
 
     /** Where {@code template}'s zero goes on {@code lot}: centred on it, turned and mirrored as the lot says. */
-    private static BlockPos origin(Lot lot, StructureTemplate template) {
+    public static BlockPos origin(Lot lot, StructureTemplate template) {
         int size = Math.max(template.getSize().getX(), template.getSize().getZ());
         int inset = Math.max(0, (lot.size() - size) / 2);
         // ours are taken out with two layers of earth under them; the game's own have their bottom layer at the ground's
@@ -1737,6 +1737,7 @@ public final class Town {
             }
             settings.addProcessor(UNLIT);
             settings.addProcessor(KITCHEN);
+            settings.addProcessor(Furnish.frames(lot.seed(), Stashes.kind(lot.building())));   // its pictures framed (Nookworks 1.7)
             if (lot.building().map(id -> Props.boarded(id, lot.seed())).orElse(false)) {   // sheeted over by whoever held out in it
                 settings.addProcessor(Props.boarded(lot.building().map(id -> Props.SHELTERS.contains(id.getPath())).orElse(false) ? 60 : 40));
             }
@@ -1749,6 +1750,15 @@ public final class Town {
         int sheltered = desert ? Desert.sheltered(level.getSeed(), lot) + Desert.built(lot) : 0;
         if (desert) {
             settings.addProcessor(Desert.erode(lot, vanilla, sheltered));
+        }
+        // what happened in it (Stories, 1.2): not where it burned, fell in or the sand took it, nor under a variant
+        boolean burnt = Traces.burning(level.getSeed(), lot.corner().getX() + lot.size() / 2, lot.corner().getZ() + lot.size() / 2);
+        var templates = level.getLevel().getServer().getStructureTemplateManager();
+        Optional<Stories.Story> story = vanilla || desert || burnt || fall != null
+                || lot.building().flatMap(id -> Variants.pick(templates, id, lot.seed())).isPresent()
+                ? Optional.empty() : Stories.of(lot.building(), lot.seed());
+        if (Stories.boards(story) && !lot.building().map(id -> Props.boarded(id, lot.seed())).orElse(false)) {
+            settings.addProcessor(Props.boarded(70));                    // held: its windows sheeted over from inside
         }
         if (vanilla) {
             // the air round a village house's floor (its template's bottom layer) would cut a trench in the ground about it
@@ -1781,6 +1791,7 @@ public final class Town {
                 Refuge.leftBehind(level, under, deeper, box);     // the note and the pearls at the back of the refuge (0.3)
                 Refuge.hull(level, under, deeper, box);           // and sealed all round in bulkheads but the way from the hall
                 Refuge.workshop(level, under, deeper, box);       // the hall's empty half a workshop of Nookworks 1.1's machines
+                Refuge.towerPipes(level, under, deeper, box, 2);  // the towers' mercury down from their Condensers (Nookworks 1.6)
                 RefugeRooms.draw(level, under, deeper, box);      // its rooms lived in, its lower floor, its door (2026-10-23)
                 Props.research(level, deep, under, deeper, box, lot.seed() ^ 0xDEE9);   // the labs' books, the notes among them
             });
@@ -1797,18 +1808,35 @@ public final class Town {
             // review, 2026-10-19: bodies lay half in the sand)
             Desert.drift(level, lot, box, vanilla, sheltered);
         }
+        // the bodies laid last, once what the building is dressed with stands round them (the audit, 2026-11-15: a body lay
+        // with its head in a block set down after it - a chair, a story's barricade, a shelf)
+        Markers.defer(true);
+        try {
+            Markers.hold(template, variant, origin, settings);
+            dressed(level, lot, template, origin, settings, box, fall, desert, vanilla, sheltered, variant, story);
+        } finally {
+            Markers.release();
+            Markers.defer(false);
+        }
+    }
+
+    /** What goes in a building once it stands: its bodies (held back by the caller), markers, books, furnishing, story. */
+    private static void dressed(WorldGenLevel level, Lot lot, StructureTemplate template, BlockPos origin, StructurePlaceSettings settings,
+            BoundingBox box, Traces.Fall fall, boolean desert, boolean vanilla, int sheltered, Optional<StructureTemplate> variant,
+            Optional<Stories.Story> story) {
         Markers.stray(level, template, origin, settings, box, lot.seed());
         // no marker's thing where the floor fell in (a diary, the remains, set up again in mid-air)
         java.util.function.Predicate<BlockPos> fell = local -> {
             BlockPos world = StructureTemplate.calculateRelativePosition(settings, local).offset(origin);
             return fall != null && fall.gone(world) || desert && Desert.worn(lot, world, vanilla, sheltered);
         };
+        var stash = Stashes.table(lot.building());                      // what such a building's own chests held (1.2)
         if (variant.isEmpty()) {
-            Markers.apply(level, template, origin, settings, box, lot.seed(), fell);
+            Markers.apply(level, template, origin, settings, box, lot.seed(), fell, stash);
         } else {
             java.util.Set<BlockPos> changed = Variants.changed(variant.get());
-            Markers.apply(level, template, origin, settings, box, lot.seed(), fell.or(changed::contains));
-            Markers.apply(level, variant.get(), origin, settings, box, lot.seed() ^ 0x5EED, fell);
+            Markers.apply(level, template, origin, settings, box, lot.seed(), fell.or(changed::contains), stash);
+            Markers.apply(level, variant.get(), origin, settings, box, lot.seed() ^ 0x5EED, fell, stash);
         }
         if (lot.building().map(INSTITUTE::equals).orElse(false)) {       // its books, left as they were left (0.3, Nookworks 1.1)
             Props.research(level, template, origin, settings, box, lot.seed());
@@ -1822,9 +1850,154 @@ public final class Town {
         }
         // what life was left in it, over what its builder put in (Furnish): not where it burned, fell in, or the sand took it
         boolean burned = Traces.burning(level.getSeed(), lot.corner().getX() + lot.size() / 2, lot.corner().getZ() + lot.size() / 2);
-        if (!vanilla && !burned && fall == null && !desert && !lot.building().map(INSTITUTE::equals).orElse(false)) {
-            Furnish.draw(level, template, origin, settings, box, lot.seed());
+        // a village house too (1.2): its shelves, chairs and lanterns as a town house has them, its own loot kept
+        boolean village = lot.building().map(Vanilla::village).orElse(false);
+        if ((!vanilla || village) && !burned && fall == null && !desert && !lot.building().map(INSTITUTE::equals).orElse(false)) {
+            Furnish.draw(level, template, origin, settings, box, lot.seed(), Stashes.kind(lot.building()));
         }
+        StructureTemplate built = template;
+        story.ifPresent(s -> Stories.draw(level, s, built, origin, settings, box, lot.seed()));
+        tidy(level, template.getBoundingBox(settings, origin), box);
+    }
+
+    /**
+     * What lost its hold once the building was worn, fallen in and dressed, taken away (the audit, 2026-11-15: lanterns
+     * hung under a ceiling the wear took, a shelf on a wall gone, a carpet over a hole, grass on a stone floor): every small
+     * thing - a lantern, a candle, a torch, an oil lamp, a carpet, a ladder, a wall shelf, a tap, a button, a plant - in
+     * the building that could not stand where it is now. What leans on a wall across the chunk's edge is left to that
+     * chunk: the wall may not be there yet.
+     */
+    static void tidy(WorldGenLevel level, BoundingBox building, BoundingBox box) {
+        tidy(level, Math.max(building.minX(), box.minX()), Math.min(building.maxX(), box.maxX()), building.minY(), building.maxY(),
+                Math.max(building.minZ(), box.minZ()), Math.min(building.maxZ(), box.maxZ()), box);
+    }
+
+    /**
+     * As {@link #tidy(WorldGenLevel, BoundingBox, BoundingBox)}, over the columns {@code x0..x1}, {@code z0..z1} from
+     * {@code y0} to {@code y1} (all in {@code box}). What can be kept is: a ladder with nothing behind it gets a board there
+     * (a way up is not taken away), a lantern that could hang where it stands, or stand where it hangs, is turned so, a
+     * bell is hung however it can be.
+     */
+    static void tidy(WorldGenLevel level, int x0, int x1, int y0, int y1, int z0, int z1, BoundingBox box) {
+        BlockPos.MutableBlockPos at = new BlockPos.MutableBlockPos();
+        for (int x = x0; x <= x1; x++) {
+            for (int z = z0; z <= z1; z++) {
+                for (int y = y0; y <= y1; y++) {
+                    BlockState state = level.getBlockState(at.set(x, y, z));
+                    if (state.isAir() || !hangsOn(state)) {
+                        continue;
+                    }
+                    net.minecraft.world.level.block.Block block = state.getBlock();
+                    // crops, stems, saplings and mushrooms answer to the light, which is not worked out yet while the world is
+                    // made (the review): let be
+                    if (block instanceof net.minecraft.world.level.block.CropBlock || block instanceof net.minecraft.world.level.block.StemBlock
+                            || block instanceof net.minecraft.world.level.block.SaplingBlock || block instanceof net.minecraft.world.level.block.MushroomBlock
+                            || state.canSurvive(level, at)) {
+                        continue;
+                    }
+                    if (block instanceof net.minecraft.world.level.block.BellBlock) {
+                        var facing = state.getValue(net.minecraft.world.level.block.BellBlock.FACING);
+                        if (!box.isInside(at.relative(facing)) || !box.isInside(at.relative(facing.getOpposite()))) {
+                            continue;                                    // its wall may be the next chunk's
+                        }
+                    }
+                    // what leans on a wall across the chunk's edge is the next chunk's to judge: that wall may not stand yet; a
+                    // vine may hang on any side
+                    if (state.getBlock() instanceof net.minecraft.world.level.block.VineBlock
+                            && (x == box.minX() || x == box.maxX() || z == box.minZ() || z == box.maxZ())) {
+                        continue;
+                    }
+                    if (wallHung(state)
+                            && !box.isInside(at.relative(state.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING).getOpposite()))) {
+                        continue;
+                    }
+                    if (state.getBlock() instanceof net.minecraft.world.level.block.LadderBlock) {
+                        BlockPos behind = at.relative(state.getValue(net.minecraft.world.level.block.LadderBlock.FACING).getOpposite());
+                        if (level.getBlockState(behind).canBeReplaced()) {
+                            level.setBlock(behind, Blocks.SPRUCE_PLANKS.defaultBlockState(), 2);
+                            continue;
+                        }
+                    }
+                    if (state.hasProperty(net.minecraft.world.level.block.LanternBlock.HANGING)) {
+                        BlockState turned = state.setValue(net.minecraft.world.level.block.LanternBlock.HANGING,
+                                !state.getValue(net.minecraft.world.level.block.LanternBlock.HANGING));
+                        if (turned.canSurvive(level, at)) {
+                            level.setBlock(at, turned, 2);
+                            continue;
+                        }
+                    }
+                    if (state.getBlock() instanceof net.minecraft.world.level.block.BellBlock) {
+                        boolean hung = false;
+                        for (var how : net.minecraft.world.level.block.state.properties.BellAttachType.values()) {
+                            BlockState bell = state.setValue(net.minecraft.world.level.block.BellBlock.ATTACHMENT, how);
+                            if (bell.canSurvive(level, at)) {
+                                level.setBlock(at, bell, 2);
+                                hung = true;
+                                break;
+                            }
+                        }
+                        if (hung) {
+                            continue;
+                        }
+                    }
+                    if (state.getBlock() instanceof net.minecraft.world.level.block.DoorBlock) {
+                        BlockPos other = state.getValue(net.minecraft.world.level.block.DoorBlock.HALF)
+                                == net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER ? at.above() : at.below();
+                        if (level.getBlockState(other).is(state.getBlock())) {
+                            level.setBlock(other, Blocks.AIR.defaultBlockState(), 2);
+                        }
+                    }
+                    if (state.getBlock() instanceof net.minecraft.world.level.block.DoublePlantBlock) {
+                        BlockPos other = state.getValue(net.minecraft.world.level.block.DoublePlantBlock.HALF)
+                                == net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER ? at.above() : at.below();
+                        if (level.getBlockState(other).is(state.getBlock())) {
+                            level.setBlock(other, Blocks.AIR.defaultBlockState(), 2);
+                        }
+                    }
+                    level.setBlock(at, Blocks.AIR.defaultBlockState(), 2);
+                }
+            }
+        }
+    }
+
+    /** Whether {@code state} hangs on the wall behind it (its facing's back): a ladder, a wall torch, a wall shelf, a sconce, a tap, a wall button or lever. */
+    static boolean wallHung(BlockState state) {
+        net.minecraft.world.level.block.Block b = state.getBlock();
+        if (!state.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.HORIZONTAL_FACING)) {
+            return false;
+        }
+        if (b instanceof net.minecraft.world.level.block.LadderBlock || b instanceof net.minecraft.world.level.block.WallTorchBlock) {
+            return true;
+        }
+        if (state.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.ATTACH_FACE)) {
+            return state.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.ATTACH_FACE)
+                    == net.minecraft.world.level.block.state.properties.AttachFace.WALL;
+        }
+        String path = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(b).getPath();
+        return path.endsWith("_wall_shelf") || path.equals("wall_sconce") || path.equals("kitchen_tap");
+    }
+
+    private static final java.util.Map<net.minecraft.world.level.block.Block, Boolean> HANGS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** Whether {@code state} is a small thing that stands on, hangs from or leans on what is beside it (cached by block). */
+    static boolean hangsOn(BlockState state) {
+        return HANGS.computeIfAbsent(state.getBlock(), Town::hangs);
+    }
+
+    private static boolean hangs(net.minecraft.world.level.block.Block b) {
+        if (b instanceof net.minecraft.world.level.block.LanternBlock || b instanceof net.minecraft.world.level.block.CandleBlock
+                || b instanceof net.minecraft.world.level.block.BaseTorchBlock || b instanceof net.minecraft.world.level.block.CarpetBlock
+                || b instanceof net.minecraft.world.level.block.LadderBlock || b instanceof net.minecraft.world.level.block.ButtonBlock
+                || b instanceof net.minecraft.world.level.block.LeverBlock || b instanceof net.minecraft.world.level.block.VegetationBlock
+                || b instanceof net.minecraft.world.level.block.BellBlock || b instanceof net.minecraft.world.level.block.VineBlock
+                || b instanceof net.minecraft.world.level.block.DoorBlock) {
+            return true;
+        }
+        String path = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(b).getPath();
+        return path.endsWith("_wall_shelf") || path.equals("oil_lamp") || path.equals("kitchen_tap") || path.startsWith("placed_")
+                || path.equals("bookend") || path.equals("plate") || path.equals("mug") || path.equals("wine_glass") || path.equals("wooden_tray")
+                || path.startsWith("unlit_")
+                && path.endsWith("lantern") || path.equals("sconce") || path.equals("wall_sconce");
     }
 
     /**

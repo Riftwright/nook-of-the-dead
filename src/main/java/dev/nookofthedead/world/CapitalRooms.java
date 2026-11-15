@@ -9,6 +9,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.Block;
@@ -168,7 +169,7 @@ final class CapitalRooms {
     }
 
     /** What stands on the floor at this column. */
-    private enum Piece { NONE, TABLE, CHAIR, BED_HEAD, BED_FOOT, BOOKS_TALL, CUPBOARD, COUNTER, HEARTH, STACK, LOW }
+    private enum Piece { NONE, TABLE, CHAIR, BED_HEAD, BED_FOOT, BOOKS_TALL, CUPBOARD, COUNTER, HEARTH, STACK, LOW, SETTEE }
 
     private record Placed(Piece piece, Direction facing, int[] table) {}
 
@@ -226,7 +227,11 @@ final class CapitalRooms {
                             : Piece.NONE, wall, null);
                 }
                 case LIVING -> {
-                    return new Placed(r < 380 ? Piece.BOOKS_TALL : r < 560 ? Piece.CUPBOARD : r < 720 ? Piece.LOW : Piece.NONE, wall, null);
+                    // a settee two or three long where the wall runs on (1.2: the reviews' bare living rooms)
+                    if (settee(h, wall)) {
+                        return new Placed(Piece.SETTEE, wall, null);
+                    }
+                    return new Placed(r < 330 ? Piece.BOOKS_TALL : r < 500 ? Piece.CUPBOARD : r < 700 ? Piece.LOW : Piece.NONE, wall, null);
                 }
                 case BEDROOM -> {
                     return new Placed(r < 250 ? Piece.CUPBOARD : r < 450 ? Piece.LOW : r < 560 ? Piece.BOOKS_TALL : Piece.NONE, wall, null);
@@ -237,10 +242,43 @@ final class CapitalRooms {
             }
         }
         Direction low = anyWall(h, 0, 0);
-        if (low != null && inside(h, h.col(0, 0)) >= 1 && !ladderAt(h, 0, 0) && r < 160 && room != Room.SHOP) {
+        // under a window or against any wall: in a narrow house's rooms (two or three across, most of the capital's) this is
+        // nearly all there is room for, so more of them where people lived (1.2: the reviews' bare rooms)
+        int under = room == Room.LIVING || room == Room.BEDROOM || room == Room.KITCHEN ? (anyWallCount(h, 0, 0) >= 2 ? 160 : 320) : 160;
+        if (low != null && inside(h, h.col(0, 0)) >= 1 && !ladderAt(h, 0, 0) && r < under && room != Room.SHOP
+                && anyWallCount(h, 0, 0) < 3) {
             return new Placed(Piece.LOW, low, null);                           // under a window: a chest, a barrel, a stool
         }
         return NOTHING;
+    }
+
+    /**
+     * Whether this column is part of a settee against {@code wall}: a run of the wall picked by the floor's cell, the same
+     * from both ends - two or three long, along the wall, each seat with the same wall behind it.
+     */
+    private static boolean settee(Here h, Direction wall) {
+        Direction along = wall.getClockWise();
+        // the run's first column: where the run's number starts it, stepping back along the wall up to two
+        for (int back = 0; back <= 2; back++) {
+            int sx = -along.getStepX() * back, sz = -along.getStepZ() * back;
+            long t = Town.hash(h.s().seed() ^ h.floor(), h.x() + sx, h.z() + sz, 427);
+            if (Math.floorMod(t, 9L) != 0) {
+                continue;
+            }
+            int length = 2 + (int) Math.floorMod(t >> 5, 2L);
+            if (back >= length) {
+                continue;
+            }
+            boolean room = true;
+            for (int k = 0; k < length && room; k++) {
+                int dx = sx + along.getStepX() * k, dz = sz + along.getStepZ() * k;
+                room = sharedWall(h, dx, dz) == wall && inside(h, h.col(dx - wall.getStepX(), dz - wall.getStepZ())) >= 1;
+            }
+            if (room) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Whether a bed's head is at ({@code dx}, {@code dz}), against wall {@code wall}: now and then, where its foot has room. */
@@ -298,6 +336,16 @@ final class CapitalRooms {
                 set(level, box, at.set(x, y, z), ModBlocks.UNLIT_LANTERN.get().defaultBlockState().setValue(BlockStateProperties.HANGING, true));
             } else if (r < 18 && anyWall(h, 0, 0) != null) {
                 set(level, box, at.set(x, y, z), Blocks.COBWEB.defaultBlockState());
+            } else if (room == Room.LIVING && r >= 900 && r < 940 && r % 5 != 4 && box.isInside(at.set(x, y, z)) && level.getBlockState(at).isAir()) {
+                Direction hung = sharedWall(h, 0, 0);
+                BlockPos behind = hung == null ? null : at.relative(hung);
+                if (hung != null && box.isInside(behind) && level.getBlockState(behind).isFaceSturdy(level, behind, hung.getOpposite())) {
+                    // the clock on the wall, stopped (an item frame with a clock in it); silent as it is put up, off the game's thread
+                    var frame = new net.minecraft.world.entity.decoration.ItemFrame(level.getLevel(), at.immutable(), hung.getOpposite());
+                    frame.setSilent(true);
+                    frame.setItem(new ItemStack(Items.CLOCK), false);
+                    level.addFreshEntity(frame);
+                }
             }
         }
     }
@@ -385,6 +433,18 @@ final class CapitalRooms {
                     orient(level, box, at.set(x, y, z), out);
                 }
             }
+            case SETTEE -> {
+                // wool stairs, their backs to the wall: the house's upholstery, faded
+                String cloth = switch ((int) Math.floorMod(h.house().hash() >> 41, 5L)) {
+                    case 0 -> "red";
+                    case 1 -> "green";
+                    case 2 -> "brown";
+                    case 3 -> "blue";
+                    default -> "gray";
+                };
+                Block seat = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getValue(net.minecraft.resources.Identifier.withDefaultNamespace(cloth + "_wool_stairs"));
+                set(level, box, at.set(x, y, z), seat.defaultBlockState().setValue(StairBlock.FACING, p.facing()));
+            }
             case NONE -> loose(level, h, room, r, y, box, at, random);
         }
     }
@@ -416,6 +476,9 @@ final class CapitalRooms {
                 if (r % 2 == 0) {
                     set(level, box, here, dev.nookworks.registry.ModCooking.IRON_POT.get().defaultBlockState()
                             .setValue(BlockStateProperties.HORIZONTAL_FACING, p.facing().getOpposite()));
+                } else if (r % 3 == 0) {
+                    set(level, box, here, dev.nookworks.registry.ModCooking.FRYING_PAN.get().defaultBlockState()
+                            .setValue(BlockStateProperties.HORIZONTAL_FACING, p.facing().getOpposite()));   // the pan left on the stove
                 }
             }
             case STACK -> {
@@ -427,9 +490,19 @@ final class CapitalRooms {
             case CUPBOARD, LOW, NONE -> {
                 // a shelf on the shared wall over it (what was left on it is drawn a block up, at the third)
                 Direction wall = shelf(h, room, p, r);
+                if (wall == null && topped(level, here.below()) && room != Room.STORE && r % 4 != 3) {
+                    onTop(level, h, room, r, here, box, random);
+                    return;
+                }
                 if (wall != null) {
                     set(level, box, here, ModWoods.WALL_SHELVES.get(wood(h.house())).get().defaultBlockState()
                             .setValue(BlockStateProperties.HORIZONTAL_FACING, wall.getOpposite()));
+                } else if (room != Room.STORE && r % ((room == Room.LIVING || room == Room.BEDROOM) ? 5 : 11) == 4) {
+                    // or a small picture over it, now and then in a frame (1.2: the reviews' "posters", Nookworks 1.7's frames)
+                    Direction hung = sharedWall(h, 0, 0);
+                    if (hung != null) {
+                        Furnish.picture(level, box, here.above(), hung.getOpposite(), r >> 4);
+                    }
                 }
             }
             default -> {
@@ -445,6 +518,33 @@ final class CapitalRooms {
         return sharedWall(h, 0, 0);
     }
 
+    /** Whether {@code below} is a full top to set something on: a barrel, a crate, a bookshelf - not a chest's lid. */
+    private static boolean topped(WorldGenLevel level, BlockPos below) {
+        BlockState state = level.getBlockState(below);
+        return !state.isAir() && state.isFaceSturdy(level, below, Direction.UP);
+    }
+
+    /** What was left on a cupboard or a barrel against the wall: a candle, a mug, the bottles, a plant gone dry, a pile of books. */
+    private static void onTop(WorldGenLevel level, Here h, Room room, long r, BlockPos at, BoundingBox box, RandomSource random) {
+        long k = (r >> 2) % 7;
+        if (k == 0) {
+            set(level, box, at, Blocks.CANDLE.defaultBlockState().setValue(BlockStateProperties.CANDLES, 1 + (int) (r % 3)));
+        } else if (k == 1) {
+            set(level, box, at, (r % 2 == 0 ? ModBlocks.MUG : ModBlocks.WINE_GLASS).get().defaultBlockState());
+        } else if (k == 2) {
+            bottles(level, box, at, 1 + (int) (r % 3), random);
+        } else if (k == 3) {
+            set(level, box, at, (r % 3 == 0 ? Blocks.POTTED_DEAD_BUSH : r % 3 == 1 ? Blocks.POTTED_FERN : dev.nookworks.registry.GlazedPots.EMPTY.get())
+                    .defaultBlockState());
+        } else if (k == 4) {
+            Props.pile(level, box, at, 1 + (int) (r % 3), (float) (r * 41 % 360), random, () -> Props.found(level, random));
+        } else if (k == 5 && (room == Room.KITCHEN || room == Room.LIVING) && box.isInside(at)) {
+            Furnish.plate(level, at, Direction.from2DDataValue((int) (r % 4)), r >> 3);
+        } else if (k == 6) {
+            set(level, box, at, ModBlocks.UNLIT_LANTERN.get().defaultBlockState());
+        }
+    }
+
     private static void tableTop(WorldGenLevel level, Here h, Room room, long r, BlockPos at, BoundingBox box, RandomSource random) {
         long k = r % 10;
         if (k < 2) {
@@ -457,6 +557,8 @@ final class CapitalRooms {
             Props.pile(level, box, at, 1 + (int) (r % 2), (float) (r * 37 % 360), random, () -> Props.found(level, random));
         } else if (k < 7) {
             set(level, box, at, (r % 2 == 0 ? Blocks.FLOWER_POT : Blocks.POTTED_DEAD_BUSH).defaultBlockState());
+        } else if (k < 9 && (room == Room.KITCHEN || room == Room.LIVING) && box.isInside(at)) {
+            Furnish.plate(level, at, Direction.from2DDataValue((int) (r % 4)), r >> 3);   // a meal no one sat down to (Nookworks 1.7)
         }
     }
 
@@ -491,6 +593,11 @@ final class CapitalRooms {
             RandomSource random) {
         int x = h.x();
         int z = h.z();
+        Block rug = rug(h, room);
+        if (rug != null && onRug(h) && Math.floorMod(Town.hash(h.s().seed(), x, z, 428), 9L) != 0) {
+            set(level, box, at.set(x, y, z), rug.defaultBlockState());     // worn through here and there
+            return;
+        }
         if (r < 40 && (room == Room.LIVING || room == Room.BEDROOM)) {
             Block carpet = r < 15 ? Blocks.CARPET.red() : r < 28 ? Blocks.CARPET.brown() : Blocks.CARPET.gray();
             set(level, box, at.set(x, y, z), carpet.defaultBlockState());
@@ -503,6 +610,45 @@ final class CapitalRooms {
         } else if (r < 58) {
             set(level, box, at.set(x, y, z), ModBlocks.PEBBLES.get().defaultBlockState());          // plaster down from the ceiling
         }
+    }
+
+    /**
+     * The rug of the five-by-five cell this column is in, on this floor, if the room has one: about half the living rooms'
+     * cells and a third of the bedrooms', in one of a few faded colours; laid over the room's open middle.
+     */
+    private static Block rug(Here h, Room room) {
+        if (room != Room.LIVING && room != Room.BEDROOM) {
+            return null;
+        }
+        long t = Town.hash(h.s().seed() ^ h.floor(), Math.floorDiv(h.x(), 5), Math.floorDiv(h.z(), 5), 429);
+        if (Math.floorMod(t, 100L) >= (room == Room.LIVING ? 50 : 33)) {
+            return null;
+        }
+        return switch ((int) Math.floorMod(t >> 8, 5L)) {
+            case 0 -> Blocks.CARPET.red();
+            case 1 -> Blocks.CARPET.brown();
+            case 2 -> Blocks.CARPET.cyan();
+            case 3 -> Blocks.CARPET.green();
+            default -> Blocks.CARPET.gray();
+        };
+    }
+
+    /** Whether this column is under its cell's rug: the cell's middle three by three, laid only where all nine are open floor. */
+    private static boolean onRug(Here h) {
+        int cx = Math.floorMod(h.x(), 5), cz = Math.floorMod(h.z(), 5);
+        if (cx < 1 || cx > 3 || cz < 1 || cz > 3) {
+            return false;
+        }
+        for (int i = 1; i <= 3; i++) {
+            for (int j = 1; j <= 3; j++) {
+                // a whole rectangle or none, never a scrap round a corner; up to the walls in a narrow room (two clear of every
+                // wall is seldom found in the capital's houses, whose rooms stood bare for it)
+                if (inside(h, h.col(i - cx, j - cz)) < 1 || ladderAt(h, i - cx, j - cz)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     /** A burnt house's rooms: nothing left standing but what would not burn, the floor black with what fell. */

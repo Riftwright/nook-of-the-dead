@@ -210,6 +210,11 @@ public final class Tunnels {
                             (Math.floorMod(Town.hash(seed, cx, cz, 136 + s), 9) == 0 ? Blocks.AIR : Blocks.SPRUCE_PLANKS).defaultBlockState());
                 }
             } else if (rails && Math.floorMod(Town.hash(seed, cx, cz, 137), 5) != 0) {
+                BlockPos bed = new BlockPos(cx, FLOOR - 1, cz);
+                if (box.isInside(bed) && !level.getBlockState(bed).isFaceSturdy(level, bed, Direction.UP)) {
+                    // over a cave the way crosses: the rail on a sleeper of planks, not on nothing (the audit, 2026-11-15)
+                    put(level, box, bed, Blocks.SPRUCE_PLANKS.defaultBlockState());
+                }
                 put(level, box, new BlockPos(cx, FLOOR, cz), Blocks.RAIL.defaultBlockState().setValue(RailBlock.SHAPE,
                         east ? RailShape.EAST_WEST : RailShape.NORTH_SOUTH));
             }

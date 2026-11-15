@@ -67,5 +67,71 @@ public class FallenTownGenerator extends FlatLevelSource {
     public void applyBiomeDecoration(WorldGenLevel level, ChunkAccess chunk, StructureManager structureManager) {
         super.applyBiomeDecoration(level, chunk, structureManager);
         Town.decorate(level, chunk);
+        halves(chunk);
+        sand(level, chunk);
+    }
+
+    /**
+     * Grass, ferns, flowers and berry bushes standing on sand once the chunk is drawn - the desert's sand drifted under
+     * what grew there, a yard's flowers at its edge (the audit, 2026-11-15) - taken away; what grows on sand stays.
+     */
+    private static void sand(WorldGenLevel level, ChunkAccess chunk) {
+        net.minecraft.core.BlockPos.MutableBlockPos at = new net.minecraft.core.BlockPos.MutableBlockPos();
+        int x0 = chunk.getPos().getMinBlockX(), z0 = chunk.getPos().getMinBlockZ();
+        for (int x = x0; x < x0 + 16; x++) {
+            for (int z = z0; z < z0 + 16; z++) {
+                int top = chunk.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG, x & 15, z & 15);
+                for (int y = top + 1; y >= Math.max(chunk.getMinY() + 1, top - 30); y--) {
+                    net.minecraft.world.level.block.state.BlockState state = chunk.getBlockState(at.set(x, y, z));
+                    if (state.getBlock() instanceof net.minecraft.world.level.block.VegetationBlock
+                            && !(state.getBlock() instanceof net.minecraft.world.level.block.DoublePlantBlock)
+                            && chunk.getBlockState(at.set(x, y - 1, z)).is(net.minecraft.tags.BlockTags.SAND)
+                            && !state.canSurvive(level, at.set(x, y, z))) {
+                        chunk.setBlockState(at, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 0);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Tall plants that lost a half once the chunk was drawn - a tuft of tall grass whose foot a cart, a barricade or a
+     * fence was set down over after it (the audit, 2026-11-15: grass tops standing on fences, slabs and walls) - taken away.
+     * Within the chunk only, so the same from every order.
+     */
+    private static void halves(ChunkAccess chunk) {
+        net.minecraft.core.BlockPos.MutableBlockPos at = new net.minecraft.core.BlockPos.MutableBlockPos();
+        net.minecraft.core.BlockPos.MutableBlockPos other = new net.minecraft.core.BlockPos.MutableBlockPos();
+        int x0 = chunk.getPos().getMinBlockX(), z0 = chunk.getPos().getMinBlockZ();
+        for (int i = 0; i < chunk.getSections().length; i++) {
+            var section = chunk.getSections()[i];
+            if (section.hasOnlyAir() || !section.maybeHas(state -> state.getBlock() instanceof net.minecraft.world.level.block.DoublePlantBlock)) {
+                continue;
+            }
+            int y0 = chunk.getSectionYFromSectionIndex(i) << 4;
+            for (int y = 0; y < 16; y++) {
+                for (int z = 0; z < 16; z++) {
+                    for (int x = 0; x < 16; x++) {
+                        net.minecraft.world.level.block.state.BlockState state = section.getBlockState(x, y, z);
+                        if (!(state.getBlock() instanceof net.minecraft.world.level.block.DoublePlantBlock)
+                                || !state.hasProperty(net.minecraft.world.level.block.DoublePlantBlock.HALF)) {
+                            continue;
+                        }
+                        boolean lower = state.getValue(net.minecraft.world.level.block.DoublePlantBlock.HALF)
+                                == net.minecraft.world.level.block.state.properties.DoubleBlockHalf.LOWER;
+                        at.set(x0 + x, y0 + y, z0 + z);
+                        other.set(at.getX(), at.getY() + (lower ? 1 : -1), at.getZ());
+                        if (other.getY() < chunk.getMinY() || other.getY() > chunk.getMaxY()) {
+                            continue;
+                        }
+                        net.minecraft.world.level.block.state.BlockState there = chunk.getBlockState(other);
+                        if (!there.is(state.getBlock()) || there.getValue(net.minecraft.world.level.block.DoublePlantBlock.HALF)
+                                == state.getValue(net.minecraft.world.level.block.DoublePlantBlock.HALF)) {
+                            chunk.setBlockState(at, net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 0);
+                        }
+                    }
+                }
+            }
+        }
     }
 }

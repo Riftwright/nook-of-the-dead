@@ -109,6 +109,21 @@ final class CapitalDraw {
                     }
                 }
             }
+            // what lost its hold as the chunk was drawn, a column at a time (the audit, 2026-11-15: shelves on walls that
+            // were windows, lanterns hung from nothing, ladders with no wall behind, bells in the air) - before the bodies
+            int low = Integer.MAX_VALUE, high = Integer.MIN_VALUE;           // the heights this chunk's columns stand at
+            for (int a = 1; a <= 16; a++) {
+                for (int b = 1; b <= 16; b++) {
+                    if (w[a][b] != null) {
+                        low = Math.min(low, w[a][b].ground());
+                        high = Math.max(high, w[a][b].ground());
+                    }
+                }
+            }
+            if (low <= high) {                                               // a cellar below, the tallest tower's spire above
+                Town.tidy(level, Math.max(box.minX(), x0 + 1), Math.min(box.maxX(), x0 + 16), Math.max(level.getMinY() + 1, low - 12),
+                        Math.min(level.getMaxY() - 1, high + 72), Math.max(box.minZ(), z0 + 1), Math.min(box.maxZ(), z0 + 16), box);
+            }
         } finally {
             Markers.defer(false);                                           // the bodies last, every wall round them drawn
             Diaries.at(Diaries.Place.TOWN);

@@ -132,6 +132,13 @@ public final class ZwCommands {
                                 .executes(c -> seams(c.getSource().getPlayerOrException(), IntegerArgumentType.getInteger(c, "radius")))))
                 .then(Commands.literal("what").executes(c -> what(c.getSource().getPlayerOrException())))
                 .then(Commands.literal("stock").executes(c -> stock(c.getSource().getPlayerOrException())))
+                .then(Commands.literal("look").executes(c -> RoomView.around(c.getSource().getPlayerOrException(), 8)))
+                .then(Commands.literal("view").then(Commands.argument("name", StringArgumentType.word())
+                        .then(Commands.argument("k", IntegerArgumentType.integer(0, 99)).executes(c -> RoomView.run(c.getSource().getPlayerOrException(),
+                                StringArgumentType.getString(c, "name"), IntegerArgumentType.getInteger(c, "k"))))))
+                .then(Commands.literal("audit").executes(c -> Audit.run(c.getSource().getPlayerOrException(), 48))
+                        .then(Commands.argument("radius", IntegerArgumentType.integer(4, 160))
+                                .executes(c -> Audit.run(c.getSource().getPlayerOrException(), IntegerArgumentType.getInteger(c, "radius")))))
                 .then(Commands.literal("film").then(Commands.argument("name", StringArgumentType.word())
                         .executes(c -> film(c.getSource().getPlayerOrException(), StringArgumentType.getString(c, "name")))))
                 .then(Commands.literal("find").then(Commands.argument("name", StringArgumentType.word())
@@ -673,6 +680,9 @@ public final class ZwCommands {
         java.util.function.Function<net.minecraft.resources.Identifier, Boolean> matches = name.equals("pyramid") ? dev.nookofthedead.world.Desert.PYRAMID::equals
                 : name.equals("village") ? dev.nookofthedead.world.Vanilla::village
                 : name.equals("portal") ? b -> dev.nookofthedead.world.Vanilla.is(b) && b.getPath().startsWith("ruined_portal/") : id::equals;
+        // a story's name (world/Stories): a building of the town that has it - "ransacked", "barricaded", "nest", "last_stand"
+        dev.nookofthedead.world.Stories.Story story = java.util.Arrays.stream(dev.nookofthedead.world.Stories.Story.values())
+                .filter(s -> s.name().equalsIgnoreCase(name)).findFirst().orElse(null);
         for (int r = 0; r <= FIND_REACH; r++) {
             Town.Lot best = null;
             double nearest = Double.MAX_VALUE;
@@ -683,7 +693,10 @@ public final class ZwCommands {
                     }
                     for (Town.Lot lot : Town.lots(seed, bx, bz)) {
                         double d = player.distanceToSqr(lot.corner().getX() + lot.size() / 2.0, Town.SURFACE, lot.corner().getZ() + lot.size() / 2.0);
-                        if (lot.use() == Town.Use.BUILDING && lot.building().map(matches).orElse(false) && d < nearest) {
+                        boolean is = story != null ? dev.nookofthedead.world.Stories.of(lot.building(), lot.seed()).filter(story::equals).isPresent()
+                                && !dev.nookofthedead.world.Traces.burning(seed, lot.corner().getX() + lot.size() / 2, lot.corner().getZ() + lot.size() / 2)
+                                : lot.building().map(matches).orElse(false);
+                        if (lot.use() == Town.Use.BUILDING && is && d < nearest) {
                             best = lot;
                             nearest = d;
                         }

@@ -59,6 +59,10 @@ public final class ZwGameTests {
         ShelterTests.registerTraces();
         SettingsTests.register();
         SleepTests.register();
+        LabTests.register();
+        LootTests.register();
+        StoryTests.register();
+        InteriorTests.register();
     }
 
     public static void register(IEventBus modEventBus) {
@@ -85,8 +89,8 @@ public final class ZwGameTests {
             ResourceKey<Consumer<GameTestHelper>> key = fn.getKey();
             String name = key.identifier().getPath();
             // the If and the runners' chases each run alone: the If is the server's, and a runner sees far past its arena (and a
-            // bell, a scream or a grenade carries far past it: runner_)
-            Holder<TestEnvironmentDefinition<?>> batch = name.startsWith("if_") || name.startsWith("runner_") || name.startsWith("mutated_")
+            // bell, a scream or a grenade carries far past it: runner_); the refuge's machine room, set down whole: lab_
+            Holder<TestEnvironmentDefinition<?>> batch = name.startsWith("if_") || name.startsWith("runner_") || name.startsWith("mutated_") || name.startsWith("lab_")
                     ? event.registerEnvironment(NookOfTheDead.id(name)) : shared;
             event.registerTest(key.identifier(), new FunctionGameTestInstance(key,
                     new TestData<>(batch, NookOfTheDead.id("arena"), TIMEOUTS.getOrDefault(name, 100), 0, true)));

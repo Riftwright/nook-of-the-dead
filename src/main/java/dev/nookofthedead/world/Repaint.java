@@ -26,8 +26,8 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
  * バリエーションを加えて、没入感を感じられるように"): the same house a street over built of other timber, with another
  * roof, and gone further to ruin or to green - all from its lot's seed, the same from every chunk.
  * <ul>
- * <li>Its timber: the builder's woods turned round among oak, spruce, dark oak and birch (each kind to another, so a
- * dark frame on a light wall stays a dark frame on a light wall) - or left as built.</li>
+ * <li>Its timber: the builder's woods a shade lighter or darker, every kind the same step along pale oak, birch, oak,
+ * spruce, dark oak (so a dark frame on a light wall stays a dark frame on a light wall) - or left as built.</li>
  * <li>Its colours: the terracotta, wool and concrete turned round among the town's dull ones, the same way.</li>
  * <li>How far gone: {@link Wear#KEPT} as the others (glass gone here and there, stone cracked - {@code Town.WEAR}),
  * {@link Wear#WORN} (most of the glass, mossed and cracked all over, the cloth rotted), {@link Wear#GREEN} (overgrown:
@@ -46,6 +46,12 @@ public final class Repaint implements StructureProcessor {
             "town/m4");
 
     private static final List<String> WOODS = List.of("oak", "spruce", "dark_oak", "birch");
+    /**
+     * The woods from lightest to darkest: a building's timber is moved a step lighter or darker along it, every kind the
+     * same step, so what was darker stays darker (the audit, 2026-11-15: turned round among four, dark oak became birch
+     * and spruce stayed dark - a roof patched in two close woods came out in black and white, like camouflage).
+     */
+    private static final List<String> TONES = List.of("pale_oak", "birch", "oak", "spruce", "dark_oak");
     private static final List<String> WOOD_PARTS = List.of("%s_planks", "%s_stairs", "%s_slab", "%s_fence", "%s_fence_gate", "%s_door",
             "%s_trapdoor", "%s_log", "%s_wood", "stripped_%s_log", "stripped_%s_wood", "%s_pressure_plate", "%s_button");
     private static final List<String> COLOURS = List.of("brown", "red", "gray", "light_gray", "white", "black", "cyan", "green");
@@ -90,8 +96,8 @@ public final class Repaint implements StructureProcessor {
             turn(swaps, COLOURS, List.of("%s_wool", "%s_carpet"), c -> c.equals("black") ? "black" : "gray");
         } else {
             if (woods >= 2) {
-                int by = woods - 1;
-                turn(swaps, WOODS, WOOD_PARTS, w -> WOODS.get((WOODS.indexOf(w) + by) % WOODS.size()));
+                int step = woods <= 3 ? -1 : 1;                            // a shade lighter, or a shade darker
+                turn(swaps, WOODS, WOOD_PARTS, w -> TONES.get(Math.max(0, Math.min(TONES.size() - 1, TONES.indexOf(w) + step))));
             }
             if (colours >= 2) {
                 int by = colours * 3 - 4;                                  // 2, 5, 8: a turn that moves every colour

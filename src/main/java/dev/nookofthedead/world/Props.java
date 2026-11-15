@@ -78,7 +78,8 @@ public final class Props {
     /** Whether books may lie at {@code at}: empty, on a full top face. */
     static boolean floorFor(WorldGenLevel level, BlockPos at) {
         BlockState here = level.getBlockState(at);
-        return (here.isAir() || here.canBeReplaced()) && level.getBlockState(at.below()).isFaceSturdy(level, at.below(), Direction.UP);
+        return (here.isAir() || here.canBeReplaced()) && level.getBlockState(at.below()).isFaceSturdy(level, at.below(), Direction.UP)
+                && !Markers.taken(at);
     }
 
     /** A pile of {@code n} books (1 to 3) lying at {@code at}, the first its way at {@code yaw}; false where they cannot lie. */

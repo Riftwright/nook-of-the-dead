@@ -405,7 +405,13 @@ public final class Desert {
             @Override
             public StructureTemplate.StructureEntityInfo processEntity(LevelReader level, BlockPos seed, StructureTemplate.StructureEntityInfo raw,
                     StructureTemplate.StructureEntityInfo info, StructurePlaceSettings settings, StructureTemplate template) {
-                return info == null || worn(lot, info.blockPos, vanilla, sheltered) ? null : info;    // with the wall it hangs on
+                if (info == null || worn(lot, info.blockPos, vanilla, sheltered)) {
+                    return null;                                                 // with the wall it hangs on
+                }
+                // a frame low in a room the sand drifts into, buried in it (the audit, 2026-11-15: things laid on the floor
+                // in frames, inside the sand): taken out with what was in it
+                String id = info.nbt.getStringOr("id", "");
+                return (id.endsWith("item_frame")) && buried(lot, info.blockPos) ? null : info;
             }
 
             @Override
@@ -444,6 +450,14 @@ public final class Desert {
                 }
             }
         }
+    }
+
+    /** Whether the sand {@link #drift} brings into {@code lot} may come up over {@code at}: low on its floor where it drifts. */
+    static boolean buried(Town.Lot lot, BlockPos at) {
+        int deep = (int) Math.floor(Town.noise(lot.seed(), at.getX(), at.getZ(), 4.0, 320) * 2.8);
+        int floor = lot.corner().getY();
+        // the sand lies from the floor, or a step of up to two over it (drift), deep blocks up: a frame in that
+        return deep > 0 && at.getY() > floor && at.getY() <= floor + 2 + deep;
     }
 
     /** The earth of {@code lot}'s own ground, its part in {@code box}, sand; its weeds gone. */

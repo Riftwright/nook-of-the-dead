@@ -213,6 +213,12 @@ public final class Markers {
     /** As {@link #apply}, but for the markers at a place (in the template) {@code passed} says a variant took over. */
     static void apply(WorldGenLevel level, StructureTemplate template, BlockPos origin, StructurePlaceSettings settings, BoundingBox box,
             long seed, java.util.function.Predicate<BlockPos> passed) {
+        apply(level, template, origin, settings, box, seed, passed, table("stash"));
+    }
+
+    /** As {@link #apply}, the builder's empty containers filled from {@code stash} ({@link Stashes}: what the building was). */
+    static void apply(WorldGenLevel level, StructureTemplate template, BlockPos origin, StructurePlaceSettings settings, BoundingBox box,
+            long seed, java.util.function.Predicate<BlockPos> passed, ResourceKey<LootTable> stash) {
         for (Marker marker : of(template)) {
             if (passed.test(marker.local())) {
                 continue;
@@ -250,7 +256,7 @@ public final class Markers {
                     && level.getBlockEntity(at) instanceof RandomizableContainer container) {
                 // what was left about the place, the suppressant in it rare (the review, 2026-10-19: a store-house's
                 // hundred barrels held fifteen or twenty doses); medicine is where the builder marked it
-                container.setLootTable(table("stash"), random.nextLong());
+                container.setLootTable(stash, random.nextLong());
             }
         }
     }
@@ -405,6 +411,47 @@ public final class Markers {
         remains(level, at, facing, random, net.minecraft.world.item.ItemStack.EMPTY);
     }
 
+    /**
+     * The places the building being dressed has things hung or laid in by its builder (its template's frames, posters,
+     * hung items: in the world), so nothing is set down over them (the audit, 2026-11-15: a pile of books, a chair over an
+     * item laid on the floor in a frame). Empty when no building is being dressed.
+     */
+    private static final ThreadLocal<java.util.Set<BlockPos>> TAKEN = ThreadLocal.withInitial(java.util.Set::of);
+
+    /** {@code template}'s hung things' places, placed at {@code origin} with {@code settings}, held as taken (until {@link #release}). */
+    static void hold(StructureTemplate template, BlockPos origin, StructurePlaceSettings settings) {
+        hold(template, java.util.Optional.empty(), origin, settings);
+    }
+
+    /** As {@link #hold}, with a variant's hung things too. */
+    static void hold(StructureTemplate template, java.util.Optional<StructureTemplate> variant, BlockPos origin, StructurePlaceSettings settings) {
+        java.util.Set<BlockPos> taken = new java.util.HashSet<>();
+        java.util.List<StructureTemplate> both = new java.util.ArrayList<>(java.util.List.of(template));
+        variant.ifPresent(both::add);
+        for (StructureTemplate t : both) {
+            for (StructureTemplate.StructureEntityInfo info : ((dev.nookofthedead.mixin.StructureTemplateAccessor) t).nookofthedead$entities()) {
+                taken.add(StructureTemplate.calculateRelativePosition(settings, info.blockPos).offset(origin));
+            }
+        }
+        TAKEN.set(taken);
+    }
+
+    /** {@code at} taken while a building is dressed (a body held back to be laid there): nothing else is set down on it. */
+    static void reserve(BlockPos at) {
+        if (TAKEN.get() instanceof java.util.HashSet<BlockPos> taken) {
+            taken.add(at);
+        }
+    }
+
+    static void release() {
+        TAKEN.remove();
+    }
+
+    /** Whether something the building's builder hung or laid takes {@code at}. */
+    public static boolean taken(BlockPos at) {
+        return TAKEN.get().contains(at);
+    }
+
     /** Bodies held back while a chunk of the capital is drawn: laid once all its columns are (null when not holding). */
     private static final ThreadLocal<java.util.List<Runnable>> DEFERRED = new ThreadLocal<>();
 
@@ -432,6 +479,7 @@ public final class Markers {
             BlockPos fixed = at.immutable();
             net.minecraft.world.item.ItemStack kept = held.copy();
             later.add(() -> lay(level, fixed, facing, random, kept));
+            reserve(fixed);                                              // nothing set down on it before it is laid (the review)
             return;
         }
         lay(level, at, facing, random, held);
@@ -445,8 +493,13 @@ public final class Markers {
         }
         BlockPos behind = at.relative(facing.getOpposite());
         boolean wall = known(level, at, behind) && level.getBlockState(behind).isFaceSturdy(level, behind, facing);
+        // laid in a seat - a pew's stair, a bench's slab: sat in it, on its seat, never lying through it (the audit, 2026-11-15:
+        // the cathedral's dead "sat where they sat" lay across their pews)
+        BlockState seat = level.getBlockState(at);
+        net.minecraft.world.phys.shapes.VoxelShape seatShape = seat.getCollisionShape(level, at);
+        boolean seated = !seatShape.isEmpty() && seatShape.max(Direction.Axis.Y) < 0.99;   // a stair, a slab, a bed: never a whole block
         Direction along = null;
-        if (!wall) {
+        if (!wall && !seated) {
             Direction first = random.nextBoolean() ? Direction.NORTH : Direction.EAST;
             for (Direction way : new Direction[] {first, first.getClockWise()}) {
                 if (room(level, at, at.relative(way)) && room(level, at, at.relative(way.getOpposite()))) {
@@ -459,7 +512,9 @@ public final class Markers {
         // a little off square, as one fallen, never so far as to reach into the blocks beside
         float yaw = along != null ? along.toYRot() + (random.nextFloat() - 0.5F) * 16.0F : facing.toYRot();
         double back = wall ? -0.2 : 0.0;
-        body.snapTo(at.getX() + 0.5 + facing.getStepX() * back, at.getY(), at.getZ() + 0.5 + facing.getStepZ() * back, yaw, 0.0F);
+        double up = seated ? (seat.getBlock() instanceof net.minecraft.world.level.block.StairBlock
+                || seat.getBlock() instanceof net.minecraft.world.level.block.SlabBlock ? 0.5 : seat.getCollisionShape(level, at).max(Direction.Axis.Y)) : 0.0;
+        body.snapTo(at.getX() + 0.5 + facing.getStepX() * back, at.getY() + up, at.getZ() + 0.5 + facing.getStepZ() * back, yaw, 0.0F);
         body.setYHeadRot(yaw);
         body.setYBodyRot(yaw);
         body.dress(random);
@@ -573,7 +628,8 @@ public final class Markers {
     public static ResourceKey<LootTable> table(String kind) {
         String known = switch (kind) {
             case "food", "medical", "weapon", "potion", "tools", "supplies", "stash" -> kind;   // stash: the review, 2026-10-19 - left out, it fell back to general
-            default -> "general";
+            // a building's own (Stashes, 1.2): left out here at first, every one of them fell back to general unseen
+            default -> kind.startsWith("stash_") && Stashes.KINDS.contains(kind.substring(6)) ? kind : "general";
         };
         return ResourceKey.create(Registries.LOOT_TABLE, NookOfTheDead.id("chests/" + known));
     }

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.1 - 2026-11
+
+Requires Nookworks 1.7.0 or later (any 1.x), NeoForge 26.3.
+
+- **The dairy stands whole**: one of 1.2's new farm buildings carried a stray copy of its hay loft and roof, and every
+  dairy had it hanging in the air some twenty blocks over the farmland. Gone from every dairy made after the update; one
+  already made keeps it (it can be broken down like any other blocks).
+
 ## 1.2.0 - 2026-11
 
 Requires **Nookworks 1.7.0** or later (any 1.x), NeoForge 26.3. **Back up your world before updating.** The new buildings

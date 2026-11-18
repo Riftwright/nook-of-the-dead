@@ -47,6 +47,7 @@ public final class Audit {
                 }
             }
         }
+        floating(level, x0, x1, z0, z1, found);
         AABB around = new AABB(x0, level.getMinY(), z0, x1 + 1, level.getMaxY(), z1 + 1);
         for (Entity e : level.getEntities((Entity) null, around, e -> true)) {
             String kind = BuiltInRegistries.ENTITY_TYPE.getKey(e.getType()).getPath();
@@ -97,6 +98,101 @@ public final class Audit {
         player.sendSystemMessage(Component.literal("audit within " + radius + ": " + all + " found"));
         NookOfTheDead.LOGGER.info("AUDIT done within {} of {}: {} found", radius, at.toShortString(), all);
         return 1;
+    }
+
+    /**
+     * Whatever stands in the air (the user, 2026-11-18: a building's roof and top room hanging high over the town): every
+     * lump of blocks within the square not joined to the ground, face to face, through other blocks - leaves, vines and
+     * liquids not counted as blocks. What reaches the square's sides counts as held (its hold may be outside). A lump is
+     * reported once, at its lowest block, with its size.
+     */
+    private static void floating(ServerLevel level, int x0, int x1, int z0, int z1, Map<String, List<BlockPos>> found) {
+        BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
+        int low = Integer.MAX_VALUE, high = Integer.MIN_VALUE;
+        for (int x = x0; x <= x1; x++) {
+            for (int z = z0; z <= z1; z++) {
+                if (!level.isLoaded(p.set(x, 0, z))) {
+                    return;                                              // the whole square loaded, or no reading of it
+                }
+                int top = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE, x, z);
+                low = Math.min(low, top);
+                high = Math.max(high, top);
+            }
+        }
+        low = Math.max(level.getMinY(), low - 4);
+        int nx = x1 - x0 + 1, ny = high - low + 1, nz = z1 - z0 + 1;
+        java.util.BitSet solid = new java.util.BitSet(nx * ny * nz);
+        for (int x = 0; x < nx; x++) {
+            for (int z = 0; z < nz; z++) {
+                for (int y = 0; y < ny; y++) {
+                    BlockState state = level.getBlockState(p.set(x0 + x, low + y, z0 + z));
+                    if (!state.isAir() && state.getFluidState().isEmpty() && !state.is(net.minecraft.tags.BlockTags.LEAVES)
+                            && !state.is(net.minecraft.world.level.block.Blocks.VINE) && !state.is(net.minecraft.world.level.block.Blocks.GLOW_LICHEN)) {
+                        solid.set((x * nz + z) * ny + y);
+                    }
+                }
+            }
+        }
+        java.util.BitSet held = new java.util.BitSet(nx * ny * nz);
+        java.util.ArrayDeque<int[]> queue = new java.util.ArrayDeque<>();
+        for (int x = 0; x < nx; x++) {
+            for (int z = 0; z < nz; z++) {
+                for (int y = 0; y < ny; y++) {
+                    int i = (x * nz + z) * ny + y;
+                    if (solid.get(i) && (y == 0 || x == 0 || z == 0 || x == nx - 1 || z == nz - 1)) {
+                        held.set(i);
+                        queue.add(new int[] {x, y, z});
+                    }
+                }
+            }
+        }
+        int[][] faces = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
+        while (!queue.isEmpty()) {
+            int[] c = queue.poll();
+            for (int[] f : faces) {
+                int x = c[0] + f[0], y = c[1] + f[1], z = c[2] + f[2];
+                if (x < 0 || y < 0 || z < 0 || x >= nx || y >= ny || z >= nz) {
+                    continue;
+                }
+                int i = (x * nz + z) * ny + y;
+                if (solid.get(i) && !held.get(i)) {
+                    held.set(i);
+                    queue.add(new int[] {x, y, z});
+                }
+            }
+        }
+        java.util.BitSet seen = new java.util.BitSet(nx * ny * nz);
+        for (int i = solid.nextSetBit(0); i >= 0; i = solid.nextSetBit(i + 1)) {
+            if (held.get(i) || seen.get(i)) {
+                continue;
+            }
+            // one lump: its size, its lowest block, the block there
+            int size = 0;
+            int[] lowest = null;
+            seen.set(i);
+            queue.add(new int[] {i / ny / nz, i % ny, (i / ny) % nz});
+            while (!queue.isEmpty()) {
+                int[] c = queue.poll();
+                size++;
+                if (lowest == null || c[1] < lowest[1]) {
+                    lowest = c;
+                }
+                for (int[] f : faces) {
+                    int x = c[0] + f[0], y = c[1] + f[1], z = c[2] + f[2];
+                    if (x < 0 || y < 0 || z < 0 || x >= nx || y >= ny || z >= nz) {
+                        continue;
+                    }
+                    int j = (x * nz + z) * ny + y;
+                    if (solid.get(j) && !held.get(j) && !seen.get(j)) {
+                        seen.set(j);
+                        queue.add(new int[] {x, y, z});
+                    }
+                }
+            }
+            BlockPos at = new BlockPos(x0 + lowest[0], low + lowest[1], z0 + lowest[2]);
+            String what = BuiltInRegistries.BLOCK.getKey(level.getBlockState(at).getBlock()).getPath();
+            found.computeIfAbsent((size >= 20 ? "floating lump " : "floating bit ") + what + " x" + size, k -> new ArrayList<>()).add(at);
+        }
     }
 
     private Audit() {}

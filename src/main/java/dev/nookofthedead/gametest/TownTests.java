@@ -28,6 +28,46 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 /** The fallen town: its lots, its buildings and their markers, and the If made over as it. */
 final class TownTests {
     static void register() {
+        // no building with a storey hanging over nothing (the user, 2026-11-18: a dairy's loft and roof floated high over the
+        // farmland - a stray copy left in the export world 29 over its bottom, ten empty layers under it): every town
+        // template's layers from its bottom to its top each hold something
+        test("town_templates_have_no_empty_layer_under_their_top", helper -> {
+            var manager = helper.getLevel().getServer().getStructureTemplateManager();
+            List<String> gaps = new java.util.ArrayList<>();
+            int seen = 0;
+            for (Identifier id : manager.listTemplates().filter(id -> id.getNamespace().equals(dev.nookofthedead.NookOfTheDead.MODID)
+                    && id.getPath().startsWith("town/")).toList()) {
+                StructureTemplate t = manager.get(id).orElse(null);
+                if (t == null) {
+                    continue;
+                }
+                seen++;
+                var palettes = ((dev.nookofthedead.mixin.StructureTemplateAccessor) t).nookofthedead$palettes();
+                if (palettes.isEmpty()) {
+                    continue;
+                }
+                int height = t.getSize().getY();
+                boolean[] held = new boolean[height];
+                for (StructureTemplate.StructureBlockInfo info : palettes.get(0).blocks()) {
+                    if (!info.state().isAir() && !info.state().is(Blocks.STRUCTURE_VOID) && info.pos().getY() >= 0 && info.pos().getY() < height) {
+                        held[info.pos().getY()] = true;
+                    }
+                }
+                int top = height - 1;
+                while (top > 0 && !held[top]) {
+                    top--;
+                }
+                for (int y = 0; y < top; y++) {
+                    if (!held[y]) {
+                        gaps.add(id.getPath() + " at " + y);
+                        break;
+                    }
+                }
+            }
+            check(helper, seen > 80, "only " + seen + " town templates read");
+            check(helper, gaps.isEmpty(), "an empty layer under a template's top: " + gaps);
+            helper.succeed();
+        });
         // every lot of a block within its lines, none on another, no street or alley under one wherever the streets step;
         // and all three layouts come up - rows back to back, a ring round a court, one M building
         test("town_lots_fill_their_blocks", helper -> {

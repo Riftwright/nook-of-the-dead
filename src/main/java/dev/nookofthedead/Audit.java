@@ -48,6 +48,7 @@ public final class Audit {
             }
         }
         floating(level, x0, x1, z0, z1, found);
+        stairs(level, x0, x1, z0, z1, at.getY(), found);
         AABB around = new AABB(x0, level.getMinY(), z0, x1 + 1, level.getMaxY(), z1 + 1);
         for (Entity e : level.getEntities((Entity) null, around, e -> true)) {
             String kind = BuiltInRegistries.ENTITY_TYPE.getKey(e.getType()).getPath();
@@ -193,6 +194,46 @@ public final class Audit {
             String what = BuiltInRegistries.BLOCK.getKey(level.getBlockState(at).getBlock()).getPath();
             found.computeIfAbsent((size >= 20 ? "floating lump " : "floating bit ") + what + " x" + size, k -> new ArrayList<>()).add(at);
         }
+    }
+
+    /**
+     * Flights that stop a block short (the user, 2026-11-18, of the institutes' stairs: the last stair under the floor's
+     * edge, a whole block to climb from it - "Bの方が自然"): a stair, the right way up, with room over it, whose way up
+     * meets a whole block with a floor's room over it - one more stair belongs where that block is, level with the floor.
+     */
+    private static void stairs(ServerLevel level, int x0, int x1, int z0, int z1, int y, Map<String, List<BlockPos>> found) {
+        BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
+        for (int x = x0; x <= x1; x++) {
+            for (int z = z0; z <= z1; z++) {
+                if (!level.isLoaded(p.set(x, y, z))) {
+                    continue;
+                }
+                for (int h = Math.max(level.getMinY(), y - 48); h <= Math.min(level.getMaxY() - 4, y + 48); h++) {
+                    BlockState state = level.getBlockState(p.set(x, h, z));
+                    if (!(state.getBlock() instanceof net.minecraft.world.level.block.StairBlock)
+                            || state.getValue(net.minecraft.world.level.block.StairBlock.HALF) != net.minecraft.world.level.block.state.properties.Half.BOTTOM) {
+                        continue;
+                    }
+                    net.minecraft.core.Direction up = state.getValue(net.minecraft.world.level.block.StairBlock.FACING);
+                    BlockPos stair = p.immutable();
+                    BlockPos edge = stair.relative(up).above();                  // where the floor begins, as the flight climbs
+                    if (open(level, stair.above()) && whole(level, edge) && open(level, edge.above())) {
+                        found.computeIfAbsent("stair a block short (up " + up.getName() + ") of " + BuiltInRegistries.BLOCK.getKey(level.getBlockState(edge).getBlock()).getPath(),
+                                k -> new ArrayList<>()).add(stair);
+                    }
+                }
+            }
+        }
+    }
+
+    private static boolean open(ServerLevel level, BlockPos at) {
+        return level.getBlockState(at).getCollisionShape(level, at).isEmpty();
+    }
+
+    private static boolean whole(ServerLevel level, BlockPos at) {
+        BlockState state = level.getBlockState(at);
+        return !(state.getBlock() instanceof net.minecraft.world.level.block.StairBlock) && state.isFaceSturdy(level, at, net.minecraft.core.Direction.UP)
+                && state.getCollisionShape(level, at).max(net.minecraft.core.Direction.Axis.Y) >= 0.99;
     }
 
     private Audit() {}

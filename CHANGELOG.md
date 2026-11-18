@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.2 - 2026-11
+
+Requires Nookworks 1.7.0 or later (any 1.x), NeoForge 26.3.
+
+- **Stairs that reach their floors**: the institute's two flights up to its upper floor, the refuge's stair down from the
+  machine hall and the tower's stair onto its second relay stopped a block under the floor's edge, a whole block to jump
+  at the top. Each now has its last stair level with the floor. In an If made before, they are put right the first time
+  you come near.
+
 ## 1.2.1 - 2026-11
 
 Requires Nookworks 1.7.0 or later (any 1.x), NeoForge 26.3.

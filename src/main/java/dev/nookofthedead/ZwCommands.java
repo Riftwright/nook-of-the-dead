@@ -370,6 +370,14 @@ public final class ZwCommands {
             player.sendSystemMessage(Component.literal("capital at " + c[0] + " " + c[1]));
             return 1;
         }
+        if (name.equals("skybase")) {                                    // the base above the clouds: its hub's floor
+            dev.nookofthedead.world.Ascent.Site site = dev.nookofthedead.world.Ascent.site(seed);
+            net.minecraft.core.BlockPos lab = dev.nookofthedead.world.SkyBase.vaccine(site);
+            level.getChunk(lab);
+            player.teleportTo(level, lab.getX() + 0.5, lab.getY() + 1, lab.getZ() + 12.5, java.util.Set.<Relative>of(), player.getYRot(), 0, true);
+            player.sendSystemMessage(Component.literal("sky base at " + lab.getX() + " " + lab.getY() + " " + lab.getZ()));
+            return 1;
+        }
         if (name.equals("ascent")) {                                     // the second institute: onto its lodestone
             dev.nookofthedead.world.Ascent.Site site = dev.nookofthedead.world.Ascent.site(seed);
             level.getChunk(site.arrival());

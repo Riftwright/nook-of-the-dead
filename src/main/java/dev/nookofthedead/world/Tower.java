@@ -346,8 +346,10 @@ public final class Tower {
                 if (!box.isInside(x, deck, z)) {
                     continue;
                 }
-                if (deck == R2 && (dx == -LANE_IN || dx == -LANE_OUT) && dz >= 1 && dz <= 3) {
-                    continue;   // the stair comes up through here (the review, 2026-10-19: it met the deck's underside)
+                if (deck == R2 && (dx == -LANE_IN || dx == -LANE_OUT) && dz >= 1 && dz <= 4) {
+                    // the stair comes up through here (the review, 2026-10-19: it met the deck's underside), its last stair
+                    // level with the deck (the user, 2026-11-18: the deck over it left a whole block to climb - Steps)
+                    continue;
                 }
                 long r = Math.floorMod(Town.hash(seed, x, deck * 3 + z, 186), 100);
                 boolean underHut = dx >= 7 && dx <= 12 && Math.abs(dz) <= 6;

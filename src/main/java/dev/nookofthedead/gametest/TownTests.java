@@ -68,6 +68,28 @@ final class TownTests {
             check(helper, gaps.isEmpty(), "an empty layer under a template's top: " + gaps);
             helper.succeed();
         });
+        // a flight a block short of its floor given its last stair, level with the floor; one that reaches it, or a stair
+        // under a wall, left as it is (the user, 2026-11-18: "Bの方が自然"); the institute's flights drawn so
+        test("stairs_reach_their_floors", helper -> {
+            BlockState up = Blocks.OAK_STAIRS.defaultBlockState().setValue(net.minecraft.world.level.block.StairBlock.FACING, Direction.EAST);
+            helper.setBlock(new BlockPos(1, 2, 1), up);
+            helper.setBlock(new BlockPos(2, 3, 1), Blocks.OAK_PLANKS);
+            helper.setBlock(new BlockPos(3, 3, 1), Blocks.OAK_PLANKS);
+            check(helper, dev.nookofthedead.world.Steps.finish(helper.getLevel(), helper.absolutePos(new BlockPos(1, 2, 1))), "a short flight not finished");
+            check(helper, helper.getLevel().getBlockState(helper.absolutePos(new BlockPos(2, 3, 1))).equals(up), "its last stair not the flight's");
+            check(helper, !dev.nookofthedead.world.Steps.finish(helper.getLevel(), helper.absolutePos(new BlockPos(2, 3, 1))), "a finished flight finished again");
+            helper.setBlock(new BlockPos(1, 2, 3), up);
+            helper.setBlock(new BlockPos(2, 3, 3), Blocks.OAK_PLANKS);
+            helper.setBlock(new BlockPos(2, 4, 3), Blocks.OAK_PLANKS);
+            check(helper, !dev.nookofthedead.world.Steps.finish(helper.getLevel(), helper.absolutePos(new BlockPos(1, 2, 3))), "a stair under a wall made a flight");
+            StructureTemplate institute = helper.getLevel().getServer().getStructureTemplateManager().get(Town.INSTITUTE).orElseThrow();
+            var palette = ((dev.nookofthedead.mixin.StructureTemplateAccessor) institute).nookofthedead$palettes().get(0).blocks();
+            for (BlockPos edge : List.of(new BlockPos(20, 10, 22), new BlockPos(20, 10, 23), new BlockPos(43, 10, 22), new BlockPos(43, 10, 23))) {
+                check(helper, palette.stream().anyMatch(i -> i.pos().equals(edge) && i.state().getBlock() instanceof net.minecraft.world.level.block.StairBlock),
+                        "the institute's flight not up to its floor at " + edge);
+            }
+            helper.succeed();
+        });
         // every lot of a block within its lines, none on another, no street or alley under one wherever the streets step;
         // and all three layouts come up - rows back to back, a ring round a court, one M building
         test("town_lots_fill_their_blocks", helper -> {

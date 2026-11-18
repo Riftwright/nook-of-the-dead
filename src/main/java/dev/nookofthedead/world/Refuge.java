@@ -287,6 +287,7 @@ public final class Refuge {
         }
         sealOld(player);
         towerRefit(player);
+        Steps.refit(player);
         RefugeRooms.retrofit(player);
         RefugeRooms.watch(player);
         SkyBase.refit(player);

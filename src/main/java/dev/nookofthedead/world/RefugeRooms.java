@@ -347,6 +347,9 @@ public final class RefugeRooms {
             this.set(x, y, 51, this.stair(Blocks.POLISHED_DEEPSLATE_STAIRS, Direction.WEST, false));
             this.fill(x, FLOOR + 1, 51, x, y - 1, 51, Blocks.DEEPSLATE_TILES);
         }
+        // and its last stair in the hall's floor, level with it (the user, 2026-11-18: the flight stopped a block under the
+        // floor's edge, a whole block to climb - Steps)
+        this.set(33, 1, 51, this.stair(Blocks.POLISHED_DEEPSLATE_STAIRS, Direction.WEST, false));
         Set<BlockPos> rail = new HashSet<>();
         for (int x = 34; x <= 52; x++) {
             rail.add(new BlockPos(x, 2, 50));

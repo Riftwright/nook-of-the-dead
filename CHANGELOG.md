@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.3 - 2026-11
+
+Requires Nookworks 1.7.0 or later (any 1.x), NeoForge 26.3.
+
+- **Setting: Suppressant in Chests** (in a world: Esc > Mods > Nook of the Dead > Config): how often a chest holds a
+  suppressant - Fewer (half as often), Normal (as it has been, the default), More (twice) or Plenty (four times), for
+  those who find it too scarce to play. A chest's contents are settled when it is first opened, so the change counts in
+  every chest not opened yet, in an If already made too.
+
 ## 1.2.2 - 2026-11
 
 Requires Nookworks 1.7.0 or later (any 1.x), NeoForge 26.3.

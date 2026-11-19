@@ -298,7 +298,7 @@
         }
       ],
       "condition": {
-        "type": "minecraft:random_chance",
+        "type": "nookofthedead:suppressant_chance",
         "chance": 0.03
       }
     }

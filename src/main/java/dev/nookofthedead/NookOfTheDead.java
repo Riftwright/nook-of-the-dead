@@ -35,6 +35,7 @@ public final class NookOfTheDead {
         ZwItems.ITEMS.register(modEventBus);
         ZwEffects.EFFECTS.register(modEventBus);
         ZwEffects.POTIONS.register(modEventBus);
+        dev.nookofthedead.registry.ZwLoot.CONDITIONS.register(modEventBus);
         ZwItems.TABS.register(modEventBus);
         ZwEntities.ENTITY_TYPES.register(modEventBus);
         Infection.ATTACHMENT_TYPES.register(modEventBus);
